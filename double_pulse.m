@@ -1,8 +1,10 @@
 %% generate double pulses
 
 % load data for single pulse
-load uc4;
-index = 10;
+% load uc4;
+
+load uc6;
+index = 5;
 
 % wave data and speed c
 udata = uc(1:end-1, index);
@@ -14,7 +16,6 @@ uout  = udata;
 % % interpolate onto a larger grid, if desired
 % N = 2*N;
 % [xout, uout] = shallow_fourier_interp(x, uc(:,index), b, L, N);
-
 
 %% make half-wave from full wave
 
@@ -83,7 +84,7 @@ join_x = zDer_x(minmax);
 % join_x = join_x / 2;
 
 % where to join the waves
-join_pt = round(join_x / h)+1;
+join_pt = round(join_x / h) + 2;
 
 % right half-wave
 center_pt  = N/2 + 1; 

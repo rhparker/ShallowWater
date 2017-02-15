@@ -46,7 +46,7 @@ end
 % option to display output and use Jacobian
 options=optimset('Display','iter','Jacobian','on','MaxIter',iter);
 
-% call solve
+% call fsolve
 [uout,fval] = fsolve(@(u) integratedshallow(u,b,par,N,D,D2,D3,D4),u,options);
 
 % reappend c to the output vector

@@ -15,11 +15,11 @@
 % [xout, uout] = shallow_fourier_interp(x, uc(:,index), b, L, N);
 % udata = uout(1:end-1);
 
-% load 1usingle;
-% udata = uout;
+load 1usingle;
+udata = uout;
 
-load 1udouble2a;
-udata = ud_out(1:end-1);
+% load 1udouble2a;
+% udata = ud_out(1:end-1);
 
 b = par.b;
 

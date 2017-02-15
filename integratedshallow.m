@@ -1,15 +1,13 @@
 %% integrated shallow water wave equation
 % parameters are b and c
-% since we will keep b fixed and vary c by continuation, store c
-% in struct as par.c
 
-function [F,J] = integratedshallow(u,b,par,N,D,D2,D3,D4)
+function [F,J] = integratedshallow(u,par,N,D,D2,D3,D4,D5)
 % returns the right-hand side of our equation
 
 % operator
 
 % linear part
-LN = (2/15)*D4 - b*D2 + sparse(1:N,[1:N],par.c,N,N);
+LN = (2/15)*D4 - par.b*D2 + sparse(1:N,[1:N],par.c,N,N);
 % we will need first two derivatives of u, compute them here
 Du  = D*u;
 D2u = D2*u;

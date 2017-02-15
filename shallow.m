@@ -1,15 +1,13 @@
 %% shallow water wave equation
 % parameters are b and c
-% since we will keep b fixed and vary c by continuation, store c
-% in struct as par.c
 
-function [F,J] = shallow(u,b,par,N,D,D2,D3,D4,D5)
+function [F,J] = shallow(u,par,N,D,D2,D3,D4,D5)
 % returns the right-hand side of our equation
 
 % operator
 
 % linear part
-LN = (2/15)*D5 - b*D3 + sparse(1:N,[1:N],par.c,N,N)*D;
+LN = (2/15)*D5 - par.b*D3 + sparse(1:N,[1:N],par.c,N,N)*D;
 % we will need first three derivatives of u, compute them here
 Du  = D*u;
 D2u = D2*u;
