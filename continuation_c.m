@@ -1,13 +1,23 @@
 % continuation code for wave speed c
 
-% BCs to use
-config.BC       = 'periodic';
-periodic = strcmp(config.BC,'periodic')
-
+% which equation to use
 % use either shallow water equation or 5th order KdV
 % config.equation = 'shallow';
 config.equation = 'KdV';
-shallow = strcmp(config.equation,'shallow')
+
+% BCs to use
+% config.BC       = 'periodic';
+config.BC       = 'Neumann';
+
+% which numerical method to use
+% Fourier only works with periodic BCs
+% config.method   = 'Fourier';
+config.method   = 'fdiff';
+
+% true-false parameters, for convenience
+shallow = strcmp(config.equation,'shallow');
+periodic = strcmp(config.BC,'periodic');
+Fourier = strcmp(config.method,'Fourier');
 
 % domain bounds and size of grid
 % need more grid points for shallow water equation
@@ -16,7 +26,8 @@ if shallow
     N = 2049;
 else
     L = 50;
-    N = 129;
+    % N = 257;         % Fourier
+    N = 1000;        % finite difference
 end
 
 % domain and step size
@@ -29,7 +40,10 @@ if periodic
     % since we equate it with initial point
     x = x(1:end-1);
     N = N-1;
+end
 
+% generate differentiation matrices
+if Fourier
     % use Fourier spectral methods for periodic domain
     % Fourier spectral method
     % generate differentiation matrices
@@ -83,7 +97,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 10;
+iterations = 200;
 
 % continuation parameters
 contPar.numContSteps    = iterations;
@@ -93,8 +107,8 @@ if shallow
     contPar.ds          = 5;    % continuation step size: should always be positive!
     contPar.initial_ds  = 5;    % initial step: sign determines direction of continuation
 else
-    contPar.ds          = 1.0e-1;         % continuation step size: should always be positive!
-    contPar.initial_ds  = 1.0e-1; % initial step: sign determines direction of continuation
+    contPar.ds          = 2.0e-1;       % continuation step size: should always be positive!
+    contPar.initial_ds  = 2.0e-1;       % initial step: sign determines direction of continuation
 end
 
 % system parameters

@@ -1,3 +1,8 @@
+% centered finite difference operators up to 5th degree
+% with Neumann BCs
+% for these, we only have 2nd order accuracy for 1st derivative
+% i.e. three point stencil for 1st derivative
+
 function [D, D2, D3, D4, D5] = D_fdiff_Neumann(N, h)
 
 % d_x

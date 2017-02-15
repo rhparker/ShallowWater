@@ -3,15 +3,24 @@
 % load data for single pulse
 % load uc4;
 
-load uc6;
-index = 5;
+load KdV_uc_Fourier;
+% load KdV_uc_fdiff;
+
+% which equation to use
+shallow = strcmp(config.equation,'shallow');
+
+index = 200;    % KdV Fourier c = 6.2848
+index = 186;    % KdV fdiff Neumann
 
 % wave data and speed c
-udata = uc(1:end-1, index);
+uout  = uc(:, index);
+uwave = uout(1:end-1);
 par.c = uc(end,index);
 
 xout  = x;
-uout  = udata;
+
+h = xout(2) - xout(1);        % grid spacing
+N = length(xout);             % number of grid points
 
 % % interpolate onto a larger grid, if desired
 % N = 2*N;
@@ -20,11 +29,15 @@ uout  = udata;
 %% make half-wave from full wave
 
 xhalf = xout( N/2+1 : end );
-uhalf = uout( N/2+1 : end );
+uhalf = uwave( N/2+1 : end );
 
 % find the spatial eigenvalues
-% roots of (2/15) nu^4 - b nu^2 + c == 0
-nu = roots([(2/15) 0 -b 0 par.c]);
+if shallow
+    % shallow water eq, roots of (2/15) nu^4 - b nu^2 + c == 0
+    nu = roots([(2/15) 0 -par.b 0 par.c]);
+else
+    nu = roots([1 0 -1 0 par.c]);
+end
 
 % oscillations frequency is imag(nu)
 % oscillations decay with constant re(nu)
@@ -39,8 +52,6 @@ spacing = pi/freq;
 % osc_plot(xhalf, uhalf, b, par.c, L, cutoff);
 
 % % do the join based on the frequency we computed
-
-% 
 % % find the first minimum, which is the bottom dip of the wave
 % [pks, locs] = findpeaks(-uhalf);
 % start_pt = locs(1);
@@ -76,15 +87,14 @@ minmax = 1;
 join_x = zDer_x(minmax);
 
 % % add this line to find half-way waves
-% % join_x = join_x + spacing/2;
 % join_x = (zDer_x(minmax) + zDer_x(minmax+1) )/ 2;
 
-% % add this line to fine pulse 0 (half way to first min)
-% % we might not be able to do this
+% % add this line with minmax = 1 to find pulse 0 (half way to first min)
+% % we might not be able to do this for shallow water eq
 % join_x = join_x / 2;
 
 % where to join the waves
-join_pt = round(join_x / h) + 2;
+join_pt = round(join_x / h) + 1;
 
 % right half-wave
 center_pt  = N/2 + 1; 
@@ -94,10 +104,10 @@ ud_right   = flip( ud_half(1:end-1) );
 ud_right   = ud_right(1:end-1);
 ud         = [ ud_half ; ud_right; par.c ];
 
-% run through Newton solver
+% run joined pulse through Newton solver
 % Newton solver on right half wave
 iter = 1000;
-[~, ud_out] = fsolveshallow(xout, ud, b, N, L, iter);
+[~, ud_out] = fsolveequation(xout, ud, par, N, L, config, iter);
 
 % plot double wave before and after Newton solver
 figure;

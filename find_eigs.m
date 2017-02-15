@@ -1,45 +1,53 @@
 %% eigenvalues of integrated operator
 
 % % single pulse
-% load uc2;
-% index = 10;
-% 
-% udata = uc(1:end-1, index);
-% par.c = uc(end,index);
-% 
-% xout  = x;
-% uout  = udata;
+% load 1single;
+% udata = uout;
 
-% % interpolate onto a larger grid
-% N = 2*N;
-% [xout, uout] = shallow_fourier_interp(x, uc(:,index), b, L, N);
-% udata = uout(1:end-1);
+% double pulse
+load 1double1a;
+udata = ud_out;
 
-load 1usingle;
+% interpolate onto a larger grid
+N = 512;
+L = -xout(1);
+L = 200;
+[xout, uout] = fsolveequation(x, udata, par, N, L, config);
 udata = uout;
 
-% load 1udouble2a;
-% udata = ud_out(1:end-1);
-
-b = par.b;
+% extract speed and wave
+par.c = udata(end);
+uwave = udata(1:end-1);
 
 % differentiation matrices
-[D, D2, D3, D4, D5] = D_fourier(N, L);
+Fourier = strcmp(config.method,'Fourier');
+if Fourier
+    [D, D2, D3, D4, D5] = D_fourier(N, L);
+else
+    % grid spacing
+    h = xout(2) - xout(1);
+    [D, D2, D3, D4, D5] = D_fdiff(N, h, config.BC);
+end
 
 % check to see that our pulse (numerically) solves the eq
 % and that derivative is eigenvector of J with eigenvalue 0
-[F,J] = integratedshallow(udata,b,par,N,D,D2,D3,D4);
+[F,J] = integratedequation(uwave,par,N,config,D,D2,D3,D4,D5);
 % plot(xout, F)
 % plot(xout, J*D*uout)
 
-num = 50;
-center = -1000;
-[int_lambda, ~, ~] = eigs_linear(xout, udata, b, par, L, N, num, center, 'integrated');
-% [lambda, V, J] = eig_linear(xout, udata, b, par, L, N, 'integrated');
-[lambda, V, J] = eig_linear(xout, udata, b, par, L, N, 'nonintegrated');
+% % eigenvalues of integrated equation
+% num = 50;
+% center = -100;
+% [int_lambda, ~, ~] = eigs_linear(xout, uwave, par, config, num, center, 'integrated');
 
-% figure;
-% plot(lambda, zeros(length(lambda)),'.');
-% title('eigenvalues of E"(u*), single pulse') 
-% axis([-20 20 -1 1]);
+% eigenvalues of nonintegrated equation
+exp_wt = 0.001;
+% [lambda_eig, V_eig, ~] = eig_linear(xout, uwave, par, config, 'nonintegrated', exp_wt);
+num    = 30;
+center = 0.01;
+[lambda, V, J] = eigs_linear(xout, uwave, par, config, num, center, 'nonintegrated', exp_wt);
+
+figure;
+plot(lambda, '.');
+% axis([-1e-3 1e-3 -1e5 1e5]);
 
