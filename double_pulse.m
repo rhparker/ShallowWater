@@ -3,14 +3,14 @@
 % load data for single pulse
 % load uc4;
 
-load KdV_uc_Fourier;
-% load KdV_uc_fdiff;
+% load KdV_uc_Fourier;
+load KdV_uc_fdiff;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
 
 index = 200;    % KdV Fourier c = 6.2848
-index = 186;    % KdV fdiff Neumann
+index = 186;    % KdV fdiff Neumann, c = 6.2755
 
 % wave data and speed c
 uout  = uc(:, index);
@@ -28,8 +28,17 @@ N = length(xout);             % number of grid points
 
 %% make half-wave from full wave
 
-xhalf = xout( N/2+1 : end );
-uhalf = uwave( N/2+1 : end );
+% where to split for the half wave depends on whether
+% we have periodic BCs or not
+if strcmp(config.BC,'Neumann')
+    offset = 0;
+% periodic BCs
+else
+    offset = 1;
+end
+
+xhalf = xout( N/2+offset : end );
+uhalf = uwave( N/2+offset : end );
 
 % find the spatial eigenvalues
 if shallow

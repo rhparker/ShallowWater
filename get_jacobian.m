@@ -15,7 +15,7 @@ function J = get_jacobian(x, u, par, config, version, exp_wt)
         I = eye(N);
     else
         % grid spacing: dist between 1st two elements of x
-        h = xout(2) - xout(1);
+        h = x(2) - x(1);
         [D, D2, D3, D4, D5] = D_fdiff(N, h, config.BC);
         I = speye(N);
     end

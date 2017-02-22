@@ -29,7 +29,7 @@ if (N ~= N_old) || (L ~= L_old)
     % if we have a nonperiodic domain, i.e. [-L, L]
     if xold(1) + xold(end) == 0
         % xout = linspace(xold(1), xold(end),N)';
-        xout = linspace(-L, L, N)'
+        xout = linspace(-L, L, N)';
     else
         % xout = linspace(xold(1),-xold(1),N+1)';
         xout = linspace(-L, L, N+1)';
