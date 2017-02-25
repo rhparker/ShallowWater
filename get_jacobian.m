@@ -12,23 +12,22 @@ function J = get_jacobian(x, u, par, config, version, exp_wt)
         % since we are always on [-L, L]
         L = -x(1);
         [D, D2, D3, D4, D5] = D_fourier(N, L);
-        I = eye(N);
     else
         % grid spacing: dist between 1st two elements of x
         h = x(2) - x(1);
         [D, D2, D3, D4, D5] = D_fdiff(N, h, config.BC);
-        I = speye(N);
     end
-    
-    if exp_wt ~= 0
-        [D, D2, D3, D4, D5] = D_expwt(I, D, D2, D3, D4, D5, exp_wt);
+
+    % if no exponential weight supplied, it is zero (unweighted)
+    if ~exist('exp_wt','var')
+        exp_wt = 0;
     end
-    
+
     % whether to use integrated version or not
     integrated = strcmp(version, 'integrated');
     if integrated
         [~,J] = integratedequation(u,par,N,config,D,D2,D3,D4,D5);
     else
-        [~,J] = equation(u,par,N,config,D,D2,D3,D4,D5); 
+        [~,J] = equation(u,par,N,config,D,D2,D3,D4,D5,exp_wt); 
     end
 end

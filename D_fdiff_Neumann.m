@@ -18,8 +18,19 @@ D = D./(2 * h);
 D2 = sparse(1:N-1,[2:N-1 N],ones(N-1,1),N,N) - sparse(1:N,[1:N],ones(N,1),N,N);
 D2 = (D2 + D2');
 
+% ghost point method with 2nd order 2nd diff
+% eigenvalues end up 1st order
 D2(1,2) = 2; 
 D2(N,N-1) = 2;
+
+% % other stencils
+% % one-sided difference, 4-pt stencil for both
+% D2(1,1:3)    = [-7/2 4 -1/2];
+% D2(N,N-2:N)  = [-1/2 4 -7/2];
+% 
+% coeffs2 = [-85/18 6 -3/2 2/9];
+% D2(1,1:4)    = coeffs2;
+% D2(N,N-3:N)  = flip(coeffs2);
 
 D2 = D2./h^2;
 

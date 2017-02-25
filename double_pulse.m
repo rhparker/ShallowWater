@@ -4,13 +4,15 @@
 % load uc4;
 
 % load KdV_uc_Fourier;
-load KdV_uc_fdiff;
+load KdV_uc_Fourier_2;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
 
-index = 200;    % KdV Fourier c = 6.2848
-index = 186;    % KdV fdiff Neumann, c = 6.2755
+% index = 200;    % KdV Fourier c = 6.2848
+% index = 186;    % KdV fdiff Neumann, c = 6.2755
+
+index = 500;    % KdV fdiff Neumann 2, c = 18.7068
 
 % wave data and speed c
 uout  = uc(:, index);
@@ -60,15 +62,6 @@ spacing = pi/freq;
 % cutoff = 5;
 % osc_plot(xhalf, uhalf, b, par.c, L, cutoff);
 
-% % do the join based on the frequency we computed
-% % find the first minimum, which is the bottom dip of the wave
-% [pks, locs] = findpeaks(-uhalf);
-% start_pt = locs(1);
-% start_x  = xhalf(start_pt);
-
-% % x value and point to do the join
-% join_x  = start_x + (minmax - 1)*spacing;
-
 % do the join by finding the min/max of half-wave directly
 % scale solution exponentially by appropriate scale factor
 % since easier to find min/max of that
@@ -85,18 +78,18 @@ Duhalf_fine = interp1(xhalf,Duhalf,xfine);
 % zero derivative is where we have a sign change
 zDer = find(diff(sign(Duhalf_fine)));
 % but derivative is discontinuous, so we only only want every other one
-numMinMax = 5;                      % how many min/max we want
+numMinMax = 8;                      % how many min/max we want
 zDer      = zDer(2*(1:numMinMax));  % take every other one, starting at second 
 zDer_x    = xfine(zDer);            % x values of deriative
 
 % which min/max we want
-minmax = 1;
+minmax = 4;
 
 % x value for join
 join_x = zDer_x(minmax);
 
-% % add this line to find half-way waves
-% join_x = (zDer_x(minmax) + zDer_x(minmax+1) )/ 2;
+% add this line to find half-way waves
+join_x = (zDer_x(minmax) + zDer_x(minmax+1) )/ 2;
 
 % % add this line with minmax = 1 to find pulse 0 (half way to first min)
 % % we might not be able to do this for shallow water eq

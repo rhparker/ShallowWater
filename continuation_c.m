@@ -6,13 +6,13 @@
 config.equation = 'KdV';
 
 % BCs to use
-% config.BC       = 'periodic';
-config.BC       = 'Neumann';
+config.BC       = 'periodic';
+% config.BC       = 'Neumann';
 
 % which numerical method to use
 % Fourier only works with periodic BCs
-% config.method   = 'Fourier';
-config.method   = 'fdiff';
+config.method   = 'Fourier';
+% config.method   = 'fdiff';
 
 % true-false parameters, for convenience
 shallow = strcmp(config.equation,'shallow');
@@ -25,9 +25,11 @@ if shallow
     L = 20;
     N = 2049;
 else
-    L = 50;
-    % N = 257;         % Fourier
-    N = 1000;        % finite difference
+%     L = 50;
+    L = 100;
+%     L = 200;
+    N = 4097;             % Fourier
+%     N = 1000;          % finite difference
 end
 
 % domain and step size
@@ -97,7 +99,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 200;
+iterations = 500;
 
 % continuation parameters
 contPar.numContSteps    = iterations;

@@ -1,7 +1,9 @@
 % takes diff operators and generates exp weight diff operators
 % a  :  exponential wt
-% I  :  appropriate size identity matrix, can be sparse or not
-function [XD, XD2, XD3, XD4, XD5] = D_expwt(I, D, D2, D3, D4, D5, a)
+function [XD, XD2, XD3, XD4, XD5] = D_expwt(D, D2, D3, D4, D5, a)
+    % sparse identity matrix; can add to full matrix 
+    I = speye(length(D));
+       
     XD  = D  - a*I;
     XD2 = D2 - 2*a*D  + (a^2)*I;
     XD3 = D3 - 3*a*D2 + 3*(a^2)*D   - (a^3)*I;

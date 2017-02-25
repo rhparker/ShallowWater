@@ -7,8 +7,19 @@
 % note that pts must be at least m/2 (rounded up) for this to work
 
 function D = fddiff(N, m, h, pts, BC)
-    wts = Fornberg_weights(0,-pts:pts,5);
-    D   = sparse_multidiag(N, wts(m+1,:), BC)/(h^m);
+    w   = Fornberg_weights(0,-pts:pts,m);
+    wts = w(m+1,:);
+    D   = sparse_multidiag(N, wts, BC)/(h^m);
+    if (strcmp(BC,'Neumann'))
+        % deal with ghost points
+        D = D + Neumann_matrix(N, wts)/(h^m);
+        % if odd derivative, then first and last rows are 0
+        % since odd derivatives are 0 at boundary
+        if mod(m, 2) == 1
+            D(1,:) = 0;
+            D(N,:) = 0;
+        end
+    end
 end
 
 % generates sparse multidiagonal matrix S
@@ -47,5 +58,26 @@ function S = sparse_diag(N, d, val, config)
     % if we specify a negative diagonal, take transpose
     if d < 0
         S = S';
+    end
+end
+
+% generates sparse matrix to add to diff matrix to 
+% enforce Neumann BCs
+%   N     : size of matrix
+%   wts   : weights for multi-diagonal of matrix
+% wts needs to have odd length
+function S = Neumann_matrix(N, wts)
+    % start with zero sparse matrix
+    S = sparse(N, N);
+    % number of rows we need to deal with is number of 
+    % weights which protrude outside of matrix
+    % i.e. number of points on either side of center
+    pts = (length(wts) - 1) / 2;
+    % values at ghost points are added to those of corresponding
+    % points flipped over 0 or N
+    for i = 1:pts
+        index = pts - i + 1;
+        S(i, 2:index+1) = flip( wts(1:index) );
+        S(N-i+1,N-index:N-1) = flip( wts( end-index+1:end) );
     end
 end
