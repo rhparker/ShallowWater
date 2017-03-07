@@ -1,5 +1,10 @@
 function [F,J] = equation(u,par,N,config,D,D2,D3,D4,D5,a)
 
+% if exponential weight is not specified, pass on 0
+if ~exist('a','var')
+    a = 0;
+end
+
 % if specified, use shallow water equation
 if strcmp(config.equation,'shallow')
     [F,J] = shallow(u,par,N,D,D2,D3,D4,D5);

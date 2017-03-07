@@ -1,18 +1,19 @@
 %% eigenvalues of integrated operator
 
-% % single pulse
+% single pulse
 % load 0single_fourier;
 % load 0single_fdiff;
-% load 1single;
-% uout = u2048;
-% xout = x2048;
-
-% % double pulse
-% load 2double1a;
-% load 2double2a;
-load 3double1a;
-% load 4double1a;
+% load 4single;
+load 5double1a;
 uout = ud_out;
+
+% % load single pulse from continuation data
+% load KdV_uc_fourier;
+% index = 31;
+% xout = x;
+% uout = uc(:,index);
+
+% % double pulse;
 
 % default parameters
 par.c = uout(end);              % wave speed
@@ -22,16 +23,27 @@ L = -xout(1);                   % current domain length
 % % if we want, we can change paramaters
 
 % % change grid size
-% N = 10000;                  % finite diff
+% N = 20000;                  % finite diff
 % N = 2048;                   % Fourier
-% 
+% N = 128;
+% N = 4096;
+% N = 400;
+L = 100;
+N = 26000;
+
 % % change domain size
 % L = 100;
-N = 1024;
+% L = 25;
+% L = 50;
 
-if N ~= length(xout) || L ~= -xout(1)
-    % interpolate onto a larger grid, or with a longer domain
-    [xnew, unew] = fsolveequation(xout, uout, par, N, L, config, 1000);
+% % change speed c (to standardize between methods)
+% par.c = 82.5;
+
+% if we change stuff, run through Newton solver
+if N ~= length(xout) || L ~= -xout(1) || par.c ~= uout(end)
+    % interpolate onto a larger grid, or with a longer domain, or with
+    % different c
+    [xnew, unew] = fsolveequation(xout, uout, par, N, L, config, 10000);
 else
     % if we don't interpolate
     xnew = xout; unew = uout;
@@ -46,7 +58,7 @@ if Fourier
     [D, D2, D3, D4, D5] = D_fourier(N, L);
 else
     % grid spacing
-    h = xnew(2) - xnew(1);
+    h = 2*L/N;
     [D, D2, D3, D4, D5] = D_fdiff(N, h, config.BC);
 end
 
@@ -57,11 +69,13 @@ end
 % several checks that we can do
 %
 
-% check to see that our pulse (numerically) solves the eq
-% and that derivative is eigenvector of J with eigenvalue 0
-% [F,J] = integratedequation(uwave,par,N,config,D,D2,D3,D4,D5);
-% plot(xout, F)
-% plot(xout, J*D*uout)
+% % check to see that our pulse (numerically) solves the eq
+% % and that derivative is eigenvector of J with eigenvalue 0
+% [F,J] = equation(uwave,par,N,config,D,D2,D3,D4,D5);
+[F,J] = integratedequation(uwave,par,N,config,D,D2,D3,D4,D5);
+
+% plot(xnew, F)
+% plot(xnew, J*D*uwave)
 
 % % check eigenvalues of integrated equation
 % num = 50;
@@ -76,19 +90,34 @@ end
 % find the ideal exponential weight (at least I hope so)
 % in terms of c
 a = find_exp_wt(par.c);
-a = .01;
+a = a / 2;
 % a = 0;
+a = 0.2;
 
 % eigenvalue of the constant solution for linearization about zero solution
 lambda_const = -a^5 + a^3 - par.c * a;
 
-% [lambda_eig, V_eig, ~] = eig_linear(xnew, uwave, par, config, 'nonintegrated', a);
+% [lambda, V, J] = eig_linear(xnew, uwave, par, config, 'nonintegrated', a);
 num    = 50;
-center = 0.1;
+% center = 1.75i;
+center = -0.004+0.4i;
 [lambda, V, J] = eigs_linear(xnew, uwave, par, config, num, center, 'nonintegrated', a);
 
-figure;
-plot(lambda, '.');
+% figure;
+% plot(lambda, '.');
+% plot_title   = ['Eigenvalues using eigs of double pulse 1, exp wt a = ',num2str(a)];
+% method_title = [config.method,', ',config.BC,' (N = ',num2str(N),', L = ',num2str(L),') '];
+% % eig_title  = ['lambda = ',num2str(lambda(1))];
+% title({plot_title, [method_title, ' ']}); 
+
+% figure;
+% plot(lambda, '.');
+% plot_title   = ['Zoom of eigenvalues using eigs of double pulse 2, exp wt a = ',num2str(a)];
+% method_title = [config.method,', ',config.BC,' (N = ',num2str(N),', L = ',num2str(L),') '];
+% eig_title  = ['lambda = ',num2str(lambda(1))];
+% title({plot_title, [method_title, ' ']}); 
+% axis([-0.4 0.4 -3 3]);
+
 % title('weighted space eigs for single pulse, known solution, fdiff/Neumann')
 % axis([-0.002 0.003 -0.05 0.05]);
 

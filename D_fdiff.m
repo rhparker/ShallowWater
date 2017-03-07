@@ -5,7 +5,9 @@
 
 function [D, D2, D3, D4, D5] = D_fdiff(N, h, BC, stencil)
 
-if strcmp(BC, 'Neumann')
+% 2nd order Neumann BCs, uses older code, i.e. not
+%  computed via Fornberg weights
+if strcmp(BC, 'Neumann2')
     [D, D2, D3, D4, D5] = D_fdiff_Neumann(N, h);
     
 else

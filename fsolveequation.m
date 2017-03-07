@@ -58,9 +58,11 @@ end
 
 % option to display output and use Jacobian
 options=optimset('Display','iter','Jacobian','on','MaxIter',iter);
-
+% options.TolFun = 1e-10;
+% options.TolX =1e-10;
 % call fsolve
 [uout,fval] = fsolve(@(u) integratedequation(u,par,N,config,D,D2,D3,D4,D5),u,options);
+% [uout,fval] = fsolve(@(u) equation(u,par,N,config,D,D2,D3,D4,D5),u,options);
 
 % reappend c to the output vector
 uout = [uout ; par.c];

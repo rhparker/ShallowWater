@@ -6,13 +6,13 @@
 config.equation = 'KdV';
 
 % BCs to use
-config.BC       = 'periodic';
-% config.BC       = 'Neumann';
+% config.BC       = 'periodic';
+config.BC       = 'Neumann';
 
 % which numerical method to use
 % Fourier only works with periodic BCs
-config.method   = 'Fourier';
-% config.method   = 'fdiff';
+% config.method   = 'Fourier';
+config.method   = 'fdiff';
 
 % true-false parameters, for convenience
 shallow = strcmp(config.equation,'shallow');
@@ -23,13 +23,16 @@ Fourier = strcmp(config.method,'Fourier');
 % need more grid points for shallow water equation
 if shallow
     L = 20;
-    N = 2049;
+%     N = 2049;
+%     N = 129;
+    N = 1001;
 else
 %     L = 50;
-    L = 100;
+%     L = 100;
 %     L = 200;
-    N = 4097;             % Fourier
-%     N = 1000;          % finite difference
+    L = 100;
+    N = 2001;              % finite difference
+%     N = 129;            % Fourier
 end
 
 % domain and step size
@@ -99,7 +102,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 500;
+iterations = 1000;
 
 % continuation parameters
 contPar.numContSteps    = iterations;

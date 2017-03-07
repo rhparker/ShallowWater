@@ -2,10 +2,10 @@
 % model system to make sure everything is working
 
 % which BCs to use
-% periodic = true;
-
-% grids = [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384];
-grids = [1024, 2048, 4096, 8192, 16384];
+periodic = true;
+% grids = [16, 32, 64, 128, 256, 512]
+% grids = [256, 512, 1024, 2048, 4096, 8192, 16384];
+grids = [128, 256, 512, 1024, 2048, 4096, 8192, 16384];
 
 nz_eig = zeros([1 length(grids)]);
 
@@ -27,8 +27,8 @@ for i = 1:length(grids)
         x = x(1:end-1);
         h = 2*pi/(N-1);
     
-        % % Fourier spectral methods; essentially no error
-        % [D, D2] = D_fourier(N-1, pi);
+%         % Fourier spectral methods; essentially no error
+%         [D, D2] = D_fourier(N-1, pi);
     
         % Finite difference/periodic
         % second order version (to compare with Neumann)
@@ -50,9 +50,9 @@ for i = 1:length(grids)
 %     lambda = sort(diag(LD));
     
     % run eigs on this, centered at 0.1; faster
-    num = 30;
+    num = 40;
     center = 0.1;
-    opts.tol = 10^(-10);
+    opts.tol = 10^(-12);
     [V, lambda_D] = eigs(LN, num, center, opts);
     lambda = sort(diag(lambda_D));
     
@@ -63,7 +63,6 @@ end;
 % error plots for polynomial order
 % use only for fdiff since Fourier converges exp really fast
 % so we hit machine accuracy quickly
-nz_diff = abs( nz_eig - round(nz_eig(end)) );
 nz_diff = abs( nz_eig - true_eig );
 xplot = log(grids);
 yplot = log(nz_diff);

@@ -1,32 +1,55 @@
 %% generate double pulses
 
-% load data for single pulse
-% load uc4;
+% load from continuation data
 
 % load KdV_uc_Fourier;
-load KdV_uc_Fourier_2;
+load ucKdV_fdper1000_2;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
 
-% index = 200;    % KdV Fourier c = 6.2848
+% index = 200;    % KdV Fourier c = 6.2848;
 % index = 186;    % KdV fdiff Neumann, c = 6.2755
-
-index = 500;    % KdV fdiff Neumann 2, c = 18.7068
+% index = 500;    % KdV fdiff Neumann 2, c = 18.7068
+% index = 266;    % KdV Fourier 2, c = 18.6714
+% index = 232;    % KdV Fourier 2, c = 16.0357
+% index = 436;    % KdVfdiff 2, c = 16.0390
+% index = 214;
+index = 500;
 
 % wave data and speed c
 uout  = uc(:, index);
 uwave = uout(1:end-1);
 par.c = uc(end,index);
-
 xout  = x;
 
-h = xout(2) - xout(1);        % grid spacing
-N = length(xout);             % number of grid points
+% % load data for single pulse
+% load 3single;
 
-% % interpolate onto a larger grid, if desired
-% N = 2*N;
-% [xout, uout] = shallow_fourier_interp(x, uc(:,index), b, L, N);
+% h = xout(2) - xout(1);        % grid spacing
+L = -xout(1);                 % domain size
+N = length(xout);             % number of grid points
+h = (2*L)/N;
+uwave = uout(1:end-1);
+
+
+% adjust c if we want (to standardize)
+% par.c = 6.275;
+% par.c = 18.67;
+% par.c = 16;
+% par.c = 5;
+% par.c = 5.0;
+
+% uout(end) = par.c;
+
+% N=2000;
+% L = 100;
+% h = (2*L)/N;
+% % if we change anything, need to send through fsolve again
+% [xout, uout] = fsolveequation(x, uout, par, N, L, config);
+% uwave = uout(1:end-1);
+% % h = xout(2) - xout(1);
+
 
 %% make half-wave from full wave
 
@@ -39,7 +62,7 @@ else
     offset = 1;
 end
 
-xhalf = xout( N/2+offset : end );
+xhalf = xout(  N/2+offset : end );
 uhalf = uwave( N/2+offset : end );
 
 % find the spatial eigenvalues
@@ -71,9 +94,10 @@ Nhalf   = length(xhalf);
 FD      = D_fdiff_Neumann(Nhalf, h);
 Duhalf  = FD*uscaled./uscaled - decay;
 % interpolate derivative on finer grid to find zeros
-Nfine       = 10000;
+Nfine       = 10001;
 xfine       = linspace(0,L,Nfine)';
 Duhalf_fine = interp1(xhalf,Duhalf,xfine);
+Duhalf_fine(isnan(Duhalf_fine)) = 0;
 
 % zero derivative is where we have a sign change
 zDer = find(diff(sign(Duhalf_fine)));
@@ -83,7 +107,7 @@ zDer      = zDer(2*(1:numMinMax));  % take every other one, starting at second
 zDer_x    = xfine(zDer);            % x values of deriative
 
 % which min/max we want
-minmax = 4;
+minmax = 1;
 
 % x value for join
 join_x = zDer_x(minmax);
@@ -96,7 +120,7 @@ join_x = (zDer_x(minmax) + zDer_x(minmax+1) )/ 2;
 % join_x = join_x / 2;
 
 % where to join the waves
-join_pt = round(join_x / h) + 1;
+join_pt = round(join_x / h)+1;
 
 % right half-wave
 center_pt  = N/2 + 1; 
@@ -108,7 +132,7 @@ ud         = [ ud_half ; ud_right; par.c ];
 
 % run joined pulse through Newton solver
 % Newton solver on right half wave
-iter = 1000;
+iter = 5000;
 [~, ud_out] = fsolveequation(xout, ud, par, N, L, config, iter);
 
 % plot double wave before and after Newton solver
