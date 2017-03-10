@@ -2,12 +2,12 @@
 
 % which equation to use
 % use either shallow water equation or 5th order KdV
-% config.equation = 'shallow';
-config.equation = 'KdV';
+config.equation = 'shallow';
+% config.equation = 'KdV';
 
 % BCs to use
-% config.BC       = 'periodic';
-config.BC       = 'Neumann';
+config.BC       = 'periodic';
+% config.BC       = 'Neumann';
 
 % which numerical method to use
 % Fourier only works with periodic BCs
@@ -25,14 +25,14 @@ if shallow
     L = 20;
 %     N = 2049;
 %     N = 129;
-    N = 1001;
+    N = 501;
 else
 %     L = 50;
 %     L = 100;
 %     L = 200;
-    L = 100;
-    N = 2001;              % finite difference
-%     N = 129;            % Fourier
+    L = 25;
+%     N = 501;              % finite difference
+    N = 129;            % Fourier
 end
 
 % domain and step size
@@ -88,7 +88,7 @@ uin = [u; par.c];
 [F,J] = integratedequation(u,par,N,config,D,D2,D3,D4,D5);
 
 % % this should be 0 since u is a solution
-% plot(x, F)
+plot(x, F)
 
 % % this should be 0 since D*u is an eigenvector with eigenvalue 0
 % plot(x,J*D*u)
@@ -102,7 +102,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 1000;
+iterations = 20;
 
 % continuation parameters
 contPar.numContSteps    = iterations;

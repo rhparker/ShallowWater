@@ -2,8 +2,9 @@
 
 % load from continuation data
 
-% load KdV_uc_Fourier;
-load ucKdV_fdper1000_2;
+% load ucKdV_fourier128;
+% load ucKdV_fdper25_500;
+load ucShallow_fdper500;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
@@ -15,7 +16,11 @@ shallow = strcmp(config.equation,'shallow');
 % index = 232;    % KdV Fourier 2, c = 16.0357
 % index = 436;    % KdVfdiff 2, c = 16.0390
 % index = 214;
-index = 500;
+% index = 1000;     % KdVfdiff1000, c = 40.9355
+% index = 537;      % KdVfourier128, c = 40.9572
+
+index = 10;
+
 
 % wave data and speed c
 uout  = uc(:, index);
@@ -23,32 +28,26 @@ uwave = uout(1:end-1);
 par.c = uc(end,index);
 xout  = x;
 
-% % load data for single pulse
-% load 3single;
-
-% h = xout(2) - xout(1);        % grid spacing
 L = -xout(1);                 % domain size
 N = length(xout);             % number of grid points
 h = (2*L)/N;
 uwave = uout(1:end-1);
-
 
 % adjust c if we want (to standardize)
 % par.c = 6.275;
 % par.c = 18.67;
 % par.c = 16;
 % par.c = 5;
-% par.c = 5.0;
+par.c = 40.9355;
+uout(end) = par.c;
 
-% uout(end) = par.c;
-
-% N=2000;
-% L = 100;
+% adjust N if we want to
+% N = 256;
 % h = (2*L)/N;
-% % if we change anything, need to send through fsolve again
-% [xout, uout] = fsolveequation(x, uout, par, N, L, config);
-% uwave = uout(1:end-1);
-% % h = xout(2) - xout(1);
+
+% if we change anything, need to send through fsolve again
+[xout, uout] = fsolveequation(x, uout, par, N, L, config);
+uwave = uout(1:end-1);
 
 
 %% make half-wave from full wave
@@ -102,18 +101,18 @@ Duhalf_fine(isnan(Duhalf_fine)) = 0;
 % zero derivative is where we have a sign change
 zDer = find(diff(sign(Duhalf_fine)));
 % but derivative is discontinuous, so we only only want every other one
-numMinMax = 8;                      % how many min/max we want
+numMinMax = 4;                      % how many min/max we want
 zDer      = zDer(2*(1:numMinMax));  % take every other one, starting at second 
 zDer_x    = xfine(zDer);            % x values of deriative
 
 % which min/max we want
-minmax = 1;
+minmax = 2;
 
 % x value for join
 join_x = zDer_x(minmax);
 
 % add this line to find half-way waves
-join_x = (zDer_x(minmax) + zDer_x(minmax+1) )/ 2;
+% join_x = (zDer_x(minmax) + zDer_x(minmax+1) )/ 2;
 
 % % add this line with minmax = 1 to find pulse 0 (half way to first min)
 % % we might not be able to do this for shallow water eq

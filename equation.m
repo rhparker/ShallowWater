@@ -7,7 +7,7 @@ end
 
 % if specified, use shallow water equation
 if strcmp(config.equation,'shallow')
-    [F,J] = shallow(u,par,N,D,D2,D3,D4,D5);
+    [F,J] = shallow(u,par,N,D,D2,D3,D4,D5,a);
     
 % otherwise use 5th order KdV equation
 else

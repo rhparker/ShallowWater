@@ -3,22 +3,17 @@
 % single pulse
 % load 0single_fourier;
 % load 0single_fdiff;
-% load 4single;
-load 5double1a;
+% load 5single;
+
+load 5double1;
 uout = ud_out;
-
-% % load single pulse from continuation data
-% load KdV_uc_fourier;
-% index = 31;
-% xout = x;
-% uout = uc(:,index);
-
-% % double pulse;
 
 % default parameters
 par.c = uout(end);              % wave speed
 N = length(xout);               % current grid size
 L = -xout(1);                   % current domain length
+
+N=1024;
 
 % % if we want, we can change paramaters
 
@@ -28,8 +23,7 @@ L = -xout(1);                   % current domain length
 % N = 128;
 % N = 4096;
 % N = 400;
-L = 100;
-N = 26000;
+N = 10000;
 
 % % change domain size
 % L = 100;
@@ -59,7 +53,7 @@ if Fourier
 else
     % grid spacing
     h = 2*L/N;
-    [D, D2, D3, D4, D5] = D_fdiff(N, h, config.BC);
+    [D, D2, D3, D4, D5] = D_fdiff(N, h, config.BC, 3);
 end
 
 % % if we want to use the zero solution, uncomment this
@@ -71,9 +65,8 @@ end
 
 % % check to see that our pulse (numerically) solves the eq
 % % and that derivative is eigenvector of J with eigenvalue 0
-% [F,J] = equation(uwave,par,N,config,D,D2,D3,D4,D5);
-[F,J] = integratedequation(uwave,par,N,config,D,D2,D3,D4,D5);
-
+[F,J] = equation(uwave,par,N,config,D,D2,D3,D4,D5);
+% [F,J] = integratedequation(uwave,par,N,config,D,D2,D3,D4,D5);
 % plot(xnew, F)
 % plot(xnew, J*D*uwave)
 
@@ -90,25 +83,66 @@ end
 % find the ideal exponential weight (at least I hope so)
 % in terms of c
 a = find_exp_wt(par.c);
-a = a / 2;
-% a = 0;
-a = 0.2;
+% a = a / 2;
+a = 0
+% a = .2;
 
 % eigenvalue of the constant solution for linearization about zero solution
 lambda_const = -a^5 + a^3 - par.c * a;
 
-% [lambda, V, J] = eig_linear(xnew, uwave, par, config, 'nonintegrated', a);
-num    = 50;
+num    = 100;
 % center = 1.75i;
-center = -0.004+0.4i;
+% center = -0.004+0.4i;
+center = 3;
+
+% % use eig
+% [lambda, V, J] = eig_linear(xnew, uwave, par, config, 'nonintegrated', a);
+% % use eig
 [lambda, V, J] = eigs_linear(xnew, uwave, par, config, num, center, 'nonintegrated', a);
 
-% figure;
-% plot(lambda, '.');
-% plot_title   = ['Eigenvalues using eigs of double pulse 1, exp wt a = ',num2str(a)];
-% method_title = [config.method,', ',config.BC,' (N = ',num2str(N),', L = ',num2str(L),') '];
-% % eig_title  = ['lambda = ',num2str(lambda(1))];
-% title({plot_title, [method_title, ' ']}); 
+eig_plot = true;
+
+if eig_plot
+    figure;
+    plot(lambda, '.');
+    plot_title   = ['Eigenvalues using eigs of double pulse 1, exp wt a = ',num2str(a)];
+    method_title = [config.method,', ',config.BC,' (N = ',num2str(N),', L = ',num2str(L),') '];
+    % eig_title  = ['lambda = ',num2str(lambda(1))];
+    title({plot_title, [method_title, ' ']}); 
+end
+
+% for exponentially weighted space, if we have a good
+% separation, we can extract the eigenvalues which are
+% to the R of the essential spectrum
+if a ~ 0
+    cutoff  = -2;
+    indices = find(real(lambda) > cutoff);
+    eVals = lambda(indices);
+    eVecs = V(:, indices);
+    
+    % for eigenvalues close to imag axis, we can fsolve them to there
+    index = 1;
+    [vout, lout] = eig_solve(J, i*imag(eVals(index)), eVecs(:,index), 'fix');
+    max_before = max( abs( J*eVecs(:,index) - eVals(index)*eVecs(:,index)) );
+    max_after  = max( abs( J*vout - lout*vout));
+    
+% otherwise grab the eigenvalues off the real axis
+else
+    cutoff = 0.1;
+    indices = find(abs(real(lambda)) > cutoff);
+    eVals = lambda(indices);
+    eVecs = V(:, indices);
+end
+
+% plot(xnew, exp(-a*xnew).*real(vout));
+% title('real part of eigenfunction, eigenvalue 0.6423i');
+
+% plot(xnew, exp(-a*xnew).*real(vout));
+% title('real part of unweighted eigenfunction, eigenvalue 0.6423i');
+
+% plot(xnew, imag(vout));
+% title('imag part of eigenfunction, eigenvalue 0.6423i');
+
 
 % figure;
 % plot(lambda, '.');

@@ -3,9 +3,9 @@
 
 % which BCs to use
 periodic = true;
-% grids = [16, 32, 64, 128, 256, 512]
+grids = [32, 64, 128, 256, 512, 1024]
 % grids = [256, 512, 1024, 2048, 4096, 8192, 16384];
-grids = [128, 256, 512, 1024, 2048, 4096, 8192, 16384];
+% grids = [128, 256, 512, 1024, 2048, 4096, 8192, 16384];
 
 nz_eig = zeros([1 length(grids)]);
 
@@ -28,11 +28,11 @@ for i = 1:length(grids)
         h = 2*pi/(N-1);
     
 %         % Fourier spectral methods; essentially no error
-%         [D, D2] = D_fourier(N-1, pi);
+        [D, D2] = D_fourier(N-1, pi);
     
         % Finite difference/periodic
         % second order version (to compare with Neumann)
-        [D, D2] = D_fdiff(N-1, h, 'periodic', 1);
+%         [D, D2] = D_fdiff(N-1, h, 'periodic', 1);
     else
         % Neumann BCs
         N = grids(i);
@@ -46,15 +46,15 @@ for i = 1:length(grids)
     LN = -D2;
     
 %     % run eig on this; requires a full matrix; can be slow
-%     [V, LD] = eig(full(LN));
-%     lambda = sort(diag(LD));
+    [V, LD] = eig(full(LN));
+    lambda = sort(diag(LD));
     
     % run eigs on this, centered at 0.1; faster
-    num = 40;
-    center = 0.1;
-    opts.tol = 10^(-12);
-    [V, lambda_D] = eigs(LN, num, center, opts);
-    lambda = sort(diag(lambda_D));
+%     num = 40;
+%     center = 0.1;
+%     opts.tol = 10^(-12);
+%     [V, lambda_D] = eigs(LN, num, center, opts);
+%     lambda = sort(diag(lambda_D));
     
     % eigenvalue to test
     nz_eig(i) = lambda(index);
