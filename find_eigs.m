@@ -5,15 +5,15 @@
 % load 0single_fdiff;
 % load 5single;
 
-load 5double1;
+load Sh4double1a; par.b=b;
+% load 6double1a;
 uout = ud_out;
 
 % default parameters
 par.c = uout(end);              % wave speed
 N = length(xout);               % current grid size
-L = -xout(1);                   % current domain length
-
-N=1024;
+L = -xout(1);                   % current domain length;
+h = 2*L/N;                      % current grid spacing
 
 % % if we want, we can change paramaters
 
@@ -23,12 +23,9 @@ N=1024;
 % N = 128;
 % N = 4096;
 % N = 400;
-N = 10000;
 
 % % change domain size
 % L = 100;
-% L = 25;
-% L = 50;
 
 % % change speed c (to standardize between methods)
 % par.c = 82.5;
@@ -84,8 +81,8 @@ end
 % in terms of c
 a = find_exp_wt(par.c);
 % a = a / 2;
-a = 0
-% a = .2;
+a = 0;
+a = 0.2;
 
 % eigenvalue of the constant solution for linearization about zero solution
 lambda_const = -a^5 + a^3 - par.c * a;
@@ -96,9 +93,9 @@ num    = 100;
 center = 3;
 
 % % use eig
-% [lambda, V, J] = eig_linear(xnew, uwave, par, config, 'nonintegrated', a);
+[lambda, V, J] = eig_linear(xnew, uwave, par, config, 'nonintegrated', a);
 % % use eig
-[lambda, V, J] = eigs_linear(xnew, uwave, par, config, num, center, 'nonintegrated', a);
+% [lambda, V, J] = eigs_linear(xnew, uwave, par, config, num, center, 'nonintegrated', a);
 
 eig_plot = true;
 
@@ -111,6 +108,7 @@ if eig_plot
     title({plot_title, [method_title, ' ']}); 
 end
 
+%% play with eigenvalues
 % for exponentially weighted space, if we have a good
 % separation, we can extract the eigenvalues which are
 % to the R of the essential spectrum
@@ -122,7 +120,7 @@ if a ~ 0
     
     % for eigenvalues close to imag axis, we can fsolve them to there
     index = 1;
-    [vout, lout] = eig_solve(J, i*imag(eVals(index)), eVecs(:,index), 'fix');
+    [vout, lout] = eig_solve(J, i*imag(eVals(index)), eVecs(:,index), 'fix_restrictnorm');
     max_before = max( abs( J*eVecs(:,index) - eVals(index)*eVecs(:,index)) );
     max_after  = max( abs( J*vout - lout*vout));
     
@@ -134,14 +132,21 @@ else
     eVecs = V(:, indices);
 end
 
-% plot(xnew, exp(-a*xnew).*real(vout));
-% title('real part of eigenfunction, eigenvalue 0.6423i');
+figure;
+plot(xnew, exp(-a*xnew).*real(vout));
+title('real part of unweighted eigenfunction, eigenvalue 0.1534i');
 
-% plot(xnew, exp(-a*xnew).*real(vout));
-% title('real part of unweighted eigenfunction, eigenvalue 0.6423i');
+figure;
+plot(xnew, exp(-a*xnew).*imag(vout));
+title('imag part of unweighted eigenfunction, eigenvalue 0.1534i');
 
-% plot(xnew, imag(vout));
-% title('imag part of eigenfunction, eigenvalue 0.6423i');
+figure;
+plot(xnew, imag(vout));
+title('imag part of eigenfunction, eigenvalue 0.1534i');
+
+figure;
+plot(xnew, real(vout));
+title('real part of eigenfunction, eigenvalue 0.1534i');
 
 
 % figure;

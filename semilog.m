@@ -1,9 +1,10 @@
 % semilog plot
 
-N = [10.9375 17.3828 23.6528 29.8828]'
-vals = [0.0293 0.0019 0.0006 0.0003]'
-xplot = log(N);
-yplot = log(vals);
+pkdist = [6.25 10.1562 13.6719]'
+% pkdist = [1 2 3]'
+vals   = [0.6423 0.0215 0.0010]'
+xplot = log(pkdist);
+yplot = vals;
 
 figure;
 hold on;

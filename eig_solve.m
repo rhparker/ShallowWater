@@ -14,6 +14,11 @@ function [vout, lout] = eig_solve(J, l, vin, config)
     if strcmp(config, 'fix')
         [vout,fval] = fsolve( @(u) eig_eq(J, l, u), vin, options);
         lout = l;
+    % fix the eigenvalue, i.e. fsolve cannot change it
+    % also restrict the norm to 1 (default)
+    elseif strcmp(config, 'fix_restrictnorm')
+        [vout,fval] = fsolve( @(u) eig_eq_restrictnorm(J, l, u), vin, options);
+        lout = l;
     % restrict eigenvalue to imaginary axis, but
     % allow fsolve to change it; for this we assuem
     % the starting eigenvalue l is on or almost on
@@ -30,6 +35,11 @@ end
 % eigenvalue equation
 function f = eig_eq(J, l, u)
     f = J*u - l*u;
+end
+
+% eigenvalue equation, restrict norm to 1
+function f = eig_eq_restrictnorm(J, l, u)
+    f = [J*u - l*u; norm(u) - 1.0];
 end
 
 % variant of eigenvalue equation, restrict eigenvalue to imaginary axis

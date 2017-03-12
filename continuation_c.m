@@ -1,4 +1,4 @@
-% continuation code for wave speed c
+%% continuation code for wave speed c
 
 % which equation to use
 % use either shallow water equation or 5th order KdV
@@ -22,17 +22,17 @@ Fourier = strcmp(config.method,'Fourier');
 % domain bounds and size of grid
 % need more grid points for shallow water equation
 if shallow
-    L = 20;
+    L = 10;
 %     N = 2049;
-%     N = 129;
-    N = 501;
+    N = 1001;
+%     N = 501;
 else
 %     L = 50;
 %     L = 100;
 %     L = 200;
-    L = 25;
+    L = 40;
 %     N = 501;              % finite difference
-    N = 129;            % Fourier
+    N = 257;            % Fourier
 end
 
 % domain and step size
@@ -86,6 +86,7 @@ uin = [u; par.c];
 
 % % check to see that our pulse (numerically) solves the eq
 [F,J] = integratedequation(u,par,N,config,D,D2,D3,D4,D5);
+% [F,J] = equation(u,par,N,config,D,D2,D3,D4,D5);
 
 % % this should be 0 since u is a solution
 plot(x, F)
@@ -102,7 +103,7 @@ plot(x, F)
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 20;
+iterations = 10;
 
 % continuation parameters
 contPar.numContSteps    = iterations;
@@ -145,7 +146,7 @@ contdata  = [contdata  v1];
 
 %% Continuation code
 % At each continuation step
-for i = 1:contPar.numContSteps
+for index = 1:contPar.numContSteps
 
   % Predictor
   v = v1 + (v1 - v0)/norm(v1 - v0, 2) * contPar.ds;
@@ -154,7 +155,7 @@ for i = 1:contPar.numContSteps
   % Call fsolve 
   [v,res,exitflag,output,jacobian2] = fsolve(@(v) FixedPointSecantPredictorCorrector(v,v1,v0,N,config,D,D2,D3,D4,D5,par,contPar),v,options); 
   
-  disp(['Step = ',int2str(i),' Parameter = ',num2str(v(end)), ' Norm(residual,inf) = ',num2str(norm(res,inf))]);
+  disp(['Step = ',int2str(index),' Parameter = ',num2str(v(end)), ' Norm(residual,inf) = ',num2str(norm(res,inf))]);
   % Update output parameters
   parameter = [parameter v(end)];
 %  normu     = [normu norm(v(1:end-1))];

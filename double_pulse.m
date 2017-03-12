@@ -2,9 +2,11 @@
 
 % load from continuation data
 
-% load ucKdV_fourier128;
+load ucKdV_fourier128;
 % load ucKdV_fdper25_500;
-load ucShallow_fdper500;
+% load ucShallow_fdper1000;
+
+load ucShallow_fourier512; par.b = b;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
@@ -18,8 +20,9 @@ shallow = strcmp(config.equation,'shallow');
 % index = 214;
 % index = 1000;     % KdVfdiff1000, c = 40.9355
 % index = 537;      % KdVfourier128, c = 40.9572
+% index = 591;      % KdVfourier256_40, c = 40.9273
 
-index = 10;
+index = 5;
 
 
 % wave data and speed c
@@ -38,12 +41,13 @@ uwave = uout(1:end-1);
 % par.c = 18.67;
 % par.c = 16;
 % par.c = 5;
-par.c = 40.9355;
-uout(end) = par.c;
+% par.c = 40.9355;
+% uout(end) = par.c;
 
 % adjust N if we want to
-% N = 256;
-% h = (2*L)/N;
+% N = 1024;
+
+h = (2*L)/N
 
 % if we change anything, need to send through fsolve again
 [xout, uout] = fsolveequation(x, uout, par, N, L, config);
@@ -101,15 +105,19 @@ Duhalf_fine(isnan(Duhalf_fine)) = 0;
 % zero derivative is where we have a sign change
 zDer = find(diff(sign(Duhalf_fine)));
 % but derivative is discontinuous, so we only only want every other one
-numMinMax = 4;                      % how many min/max we want
+numMinMax = 3;                      % how many min/max we want
 zDer      = zDer(2*(1:numMinMax));  % take every other one, starting at second 
 zDer_x    = xfine(zDer);            % x values of deriative
 
-% which min/max we want
-minmax = 2;
+% % which min/max we want
+% minmax = 1;
+% % x value for join
+% join_x = zDer_x(minmax);
 
-% x value for join
-join_x = zDer_x(minmax);
+% another way to do this, using known spacing
+start = 1;
+index = 1;
+join_x = zDer_x(start) + (index - 1)*(spacing/2);
 
 % add this line to find half-way waves
 % join_x = (zDer_x(minmax) + zDer_x(minmax+1) )/ 2;
@@ -131,7 +139,7 @@ ud         = [ ud_half ; ud_right; par.c ];
 
 % run joined pulse through Newton solver
 % Newton solver on right half wave
-iter = 5000;
+iter = 10000;
 [~, ud_out] = fsolveequation(xout, ud, par, N, L, config, iter);
 
 % plot double wave before and after Newton solver
