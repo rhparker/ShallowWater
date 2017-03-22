@@ -2,8 +2,8 @@
 
 % which equation to use
 % use either shallow water equation or 5th order KdV
-config.equation = 'shallow';
-% config.equation = 'KdV';
+% config.equation = 'shallow';
+config.equation = 'KdV';
 
 % BCs to use
 config.BC       = 'periodic';
@@ -11,8 +11,8 @@ config.BC       = 'periodic';
 
 % which numerical method to use
 % Fourier only works with periodic BCs
-% config.method   = 'Fourier';
-config.method   = 'fdiff';
+config.method   = 'Fourier';
+% config.method   = 'fdiff';
 
 % true-false parameters, for convenience
 shallow = strcmp(config.equation,'shallow');
@@ -30,9 +30,9 @@ else
 %     L = 50;
 %     L = 100;
 %     L = 200;
-    L = 40;
+    L = 25;
 %     N = 501;              % finite difference
-    N = 257;            % Fourier
+    N = 257;                % Fourier
 end
 
 % domain and step size
@@ -85,11 +85,25 @@ uin = [u; par.c];
 %% some checks we can run
 
 % % check to see that our pulse (numerically) solves the eq
-[F,J] = integratedequation(u,par,N,config,D,D2,D3,D4,D5);
-% [F,J] = equation(u,par,N,config,D,D2,D3,D4,D5);
 
-% % this should be 0 since u is a solution
-plot(x, F)
+% this would be true, since u is a solution, except initial
+% solution does not satisfy the BCs. So to get a solution
+% we would need to run it through fsolve once
+
+% % fsolve with integrated equation (4th order)
+
+% options = optimset('Display','iter','Algorithm','levenberg-marquardt','MaxIter',30,'Jacobian','on');
+% [uout,fval,exitflag,output,jacobian1]  = fsolve( @(u) integratedequation(u,par,N,config,D,D2,D3,D4,D5),u,options);
+
+% % fsolve with nonintegrated equation (5th order)
+% options = optimset('Display','iter','Algorithm','levenberg-marquardt','MaxIter',30,'Jacobian','on');
+% [uout,fval,exitflag,output,jacobian1]  = fsolve( @(u) equation(u,par,N,config,D,D2,D3,D4,D5),u,options);
+
+% [F,J] = integratedequation(uout,par,N,config,D,D2,D3,D4,D5);
+% [F,J] = equation(uout,par,N,config,D,D2,D3,D4,D5);
+% plot(x,F);
+
+% uout = [uout ; par.c ];
 
 % % this should be 0 since D*u is an eigenvector with eigenvalue 0
 % plot(x,J*D*u)

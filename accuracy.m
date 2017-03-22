@@ -3,13 +3,14 @@
 % L  = 50;
 % h  = 2*L./N;
 
-L = 25;
-
 cutoff = length(leigs02);
 index  = 2;
 true_value = 0;
 grids  = leigs02(1:cutoff,1);
 vals   = abs( real( leigs02(1:cutoff,index) ) - true_value);
+
+grids = integsAvg(:,1);
+vals  = abs(real(integsAvg(:,4)));
 
 % diffs = true;
 diffs = false;
@@ -18,18 +19,36 @@ if diffs
     grids = grids(1:end-1);
 end
 
-xplot = log( 2*L./ grids);
-yplot = log( vals );
+xplot = log( 2*L./ grids );
+% xplot = grids;
+yplot = log(vals);
 
-% yplot = log( abs( leigs(:,1) - 0.605i ) )
+% % tail plots 
+% plot_start = length(xnew)/2 + 50;
+% plot_end   = length(xnew);
+% xplot = xnew(plot_start:plot_end);
+% yplot = log10( abs(eVecs(plot_start:plot_end)) );
+
+% flip pmaxlots
+mf = maxflips;
+yplot = log( mf(:,3) );
+xplot = log( mf(:,2) );
+
 
 figure;
 hold on;
-plot_title = 'log (abs value of) real part of Left Eigenvalue vs log mesh size';
-ylabel('log (abs value of) real part of Left Eigenvalue');
+marker_size = 40;
+
+% titles and labels
+plot_title = 'Log max |v(x)| - |v(-x)| vs log L, lambda=0.0215i, Fourier, N=2048';
+title(plot_title);
+ylabel('log max |v(x)| - |v(-x)|');
+xlabel('log L');
+
+scatter(xplot, yplot, marker_size, 'filled');
+
+% best fit line 
 bestfit = fit(xplot, yplot, 'poly1');
-scatter(xplot, yplot, 45, 'filled');
 plot(xplot, bestfit(xplot));
-title(strcat(plot_title,', order = ',num2str(abs(bestfit.p1))));
-xlabel('Log mesh size');
+title(strcat(plot_title,', slope = ',num2str(abs(bestfit.p1))));
 

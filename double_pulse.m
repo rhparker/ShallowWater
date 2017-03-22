@@ -5,8 +5,9 @@
 load ucKdV_fourier128;
 % load ucKdV_fdper25_500;
 % load ucShallow_fdper1000;
+load ucKdV_fdNeumann2000;
 
-load ucShallow_fourier512; par.b = b;
+% load ucShallow_fourier512; par.b = b;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
@@ -19,11 +20,9 @@ shallow = strcmp(config.equation,'shallow');
 % index = 436;    % KdVfdiff 2, c = 16.0390
 % index = 214;
 % index = 1000;     % KdVfdiff1000, c = 40.9355
-% index = 537;      % KdVfourier128, c = 40.9572
+index = 537;      % KdVfourier128, c = 40.9572
 % index = 591;      % KdVfourier256_40, c = 40.9273
-
-index = 5;
-
+index = 1;
 
 % wave data and speed c
 uout  = uc(:, index);
@@ -47,7 +46,9 @@ uwave = uout(1:end-1);
 % adjust N if we want to
 % N = 1024;
 
-h = (2*L)/N
+N=2000;
+L=50;
+h = (2*L)/N;
 
 % if we change anything, need to send through fsolve again
 [xout, uout] = fsolveequation(x, uout, par, N, L, config);
@@ -124,7 +125,7 @@ join_x = zDer_x(start) + (index - 1)*(spacing/2);
 
 % % add this line with minmax = 1 to find pulse 0 (half way to first min)
 % % we might not be able to do this for shallow water eq
-% join_x = join_x / 2;
+join_x = join_x / 2;
 
 % where to join the waves
 join_pt = round(join_x / h)+1;
