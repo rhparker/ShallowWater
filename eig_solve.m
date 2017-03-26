@@ -7,22 +7,28 @@ function [vout, lout] = eig_solve(J, l, vin, config)
 
     iter = 100;
     options=optimset('Display','iter','MaxIter',iter); 
-%     options.TolFun = 1e-9;
-%     options.TolX =1e-9;
+    options.TolFun = 1e-20;
+    options.TolX   = 1e-20;
     
     % fix the eigenvalue, i.e. fsolve cannot change it
     if strcmp(config, 'fix')
         [vout,fval] = fsolve( @(u) eig_eq(J, l, u), vin, options);
         lout = l;
-    % fix the eigenvalue, i.e. fsolve cannot change it
-    % also restrict the norm to 1 (default)
+
+    % fix the eigenvalue and restrict norm to 1
     elseif strcmp(config, 'fix_restrictnorm')
         [vout,fval] = fsolve( @(u) eig_eq_restrictnorm(J, l, u), vin, options);
         lout = l;
+
+    elseif strcmp(config, 'symm')
+        [vout,fval] = fsolve( @(u) eig_eq_symm(J, l, u), vin, options);
+        lout = l;
+
     % restrict eigenvalue to imaginary axis, but
-    % allow fsolve to change it; for this we assuem
+    % allow fsolve to change it; for this we assume
     % the starting eigenvalue l is on or almost on
-    % the imaginary axis
+    % the imaginary axis and split eigenvalue problem
+    % into real and imag parts
     elseif strcmp(config, 'imag')
         input = [real(vin); imag(vin); imag(l) ]
         [output,fval] = fsolve( @(u) eig_imag_axis(J, u), input, options);
@@ -51,6 +57,7 @@ function f = eig_imag_axis(J, input)
     u_imag = input(N+1:2*N);
     u = u_real + i*u_imag;
     l = input(end);
-    f = ((J*u_real + l*u_imag).^2 + (J*u_imag - l*u_real).^2).^(1/2);
+%     f = ((J*u_real + l*u_imag).^2 + (J*u_imag - l*u_real).^2).^(1/2);
+    f = [J*u_real + l*u_imag; J*u_imag - l*u_real]
 end
 

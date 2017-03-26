@@ -14,6 +14,10 @@ config.BC       = 'periodic';
 config.method   = 'Fourier';
 % config.method   = 'fdiff';
 
+% enforce symmetry
+config.symmetry = 'L2squaredflip';
+% config.symmetry = 'compare';
+
 % true-false parameters, for convenience
 shallow = strcmp(config.equation,'shallow');
 periodic = strcmp(config.BC,'periodic');
@@ -22,7 +26,7 @@ Fourier = strcmp(config.method,'Fourier');
 % domain bounds and size of grid
 % need more grid points for shallow water equation
 if shallow
-    L = 10;
+    L = 5;
 %     N = 2049;
     N = 1001;
 %     N = 501;
@@ -117,7 +121,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 10;
+iterations = 20;
 
 % continuation parameters
 contPar.numContSteps    = iterations;
@@ -127,8 +131,8 @@ if shallow
     contPar.ds          = 5;    % continuation step size: should always be positive!
     contPar.initial_ds  = 5;    % initial step: sign determines direction of continuation
 else
-    contPar.ds          = 2.0e-1;       % continuation step size: should always be positive!
-    contPar.initial_ds  = 2.0e-1;       % initial step: sign determines direction of continuation
+    contPar.ds          = 1e-1;       % continuation step size: should always be positive!
+    contPar.initial_ds  = 1e-1;       % initial step: sign determines direction of continuation
 end
 
 % system parameters
@@ -139,7 +143,10 @@ u0 = u;
 
 % first point
 options = optimset('Display','iter','Algorithm','levenberg-marquardt','MaxIter',30,'Jacobian','on');
-[u1,fval,exitflag,output,jacobian1]  = fsolve( @(u) integratedequation(u,par,N,config,D,D2,D3,D4,D5),u0,options);
+options.TolFun = 1e-16;
+options.TolX = 1e-16;
+
+[u1,fval,exitflag,output,jacobian1]  = fsolve( @(u) integratedequation(x,u,par,N,config,D,D2,D3,D4,D5,u0),u0,options);
 
 v0 = [u1; getfield(par,contPar.Name)];  % v0 is the first point with parameter name
 
@@ -149,7 +156,7 @@ contdata  = v0;
 
 % second point
 par = setfield(par,contPar.Name,getfield(par,contPar.Name)+contPar.initial_ds); % increase par by ds
-[u2,fval,exitflag,output,jacobian1]  = fsolve(@(u) integratedequation(u,par,N,config,D,D2,D3,D4,D5),u1,options);
+[u2,fval,exitflag,output,jacobian1]  = fsolve(@(u) integratedequation(x,u,par,N,config,D,D2,D3,D4,D5,u1),u1,options);
 
 v1 = [u2; getfield(par,contPar.Name)]; % v1 is the second point with parameter name
 
@@ -166,8 +173,8 @@ for index = 1:contPar.numContSteps
   v = v1 + (v1 - v0)/norm(v1 - v0, 2) * contPar.ds;
   
   disp(['Predictor = ',num2str(v(end))]);
-  % Call fsolve 
-  [v,res,exitflag,output,jacobian2] = fsolve(@(v) FixedPointSecantPredictorCorrector(v,v1,v0,N,config,D,D2,D3,D4,D5,par,contPar),v,options); 
+  % Call fsolve predictor/corrector function
+  [v,res,exitflag,output,jacobian2] = fsolve(@(v) FixedPointSecantPredictorCorrector(x,v,v1,v0,@integratedequation,N,config,D,D2,D3,D4,D5,par,contPar,v1(1:end-1)),v,options); 
   
   disp(['Step = ',int2str(index),' Parameter = ',num2str(v(end)), ' Norm(residual,inf) = ',num2str(norm(res,inf))]);
   % Update output parameters

@@ -1,7 +1,7 @@
 %% integrated shallow water wave equation
 % parameters are b and c
 
-function [F,J] = integratedshallow(u,par,N,D,D2,D3,D4,D5)
+function [F,J] = integratedshallow(u,par,N,config,D,D2,D3,D4,D5)
 % returns the right-hand side of our equation
 
 % operator

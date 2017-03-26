@@ -2,12 +2,8 @@
 
 % load from continuation data
 
-load ucKdV_fourier128;
-% load ucKdV_fdper25_500;
-% load ucShallow_fdper1000;
-load ucKdV_fdNeumann2000;
-
-% load ucShallow_fourier512; par.b = b;
+load ucKdV_Fourier_256;
+% load ucKdV_Fourier_128;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
@@ -20,9 +16,12 @@ shallow = strcmp(config.equation,'shallow');
 % index = 436;    % KdVfdiff 2, c = 16.0390
 % index = 214;
 % index = 1000;     % KdVfdiff1000, c = 40.9355
-index = 537;      % KdVfourier128, c = 40.9572
+% index = 537;      % KdVfourier128, c = 40.9572
 % index = 591;      % KdVfourier256_40, c = 40.9273
-index = 1;
+
+index = 1465;       % KdV_Fourier_256, c = 40.9410
+index = 1600;
+index = 200;
 
 % wave data and speed c
 uout  = uc(:, index);
@@ -46,14 +45,17 @@ uwave = uout(1:end-1);
 % adjust N if we want to
 % N = 1024;
 
-N=2000;
-L=50;
-h = (2*L)/N;
+% N=2000;
+% L=50;
+
+config.symmetry = 'L2squaredflip';
 
 % if we change anything, need to send through fsolve again
 [xout, uout] = fsolveequation(x, uout, par, N, L, config);
 uwave = uout(1:end-1);
+h = (2*L)/N;
 
+findsymm(xout, uout, config)
 
 %% make half-wave from full wave
 
@@ -117,7 +119,7 @@ zDer_x    = xfine(zDer);            % x values of deriative
 
 % another way to do this, using known spacing
 start = 1;
-index = 1;
+index = 2;
 join_x = zDer_x(start) + (index - 1)*(spacing/2);
 
 % add this line to find half-way waves
@@ -125,7 +127,7 @@ join_x = zDer_x(start) + (index - 1)*(spacing/2);
 
 % % add this line with minmax = 1 to find pulse 0 (half way to first min)
 % % we might not be able to do this for shallow water eq
-join_x = join_x / 2;
+% join_x = join_x / 2;
 
 % where to join the waves
 join_pt = round(join_x / h)+1;
@@ -149,5 +151,7 @@ figure;
 plot(xout, ud(1:end-1), xout, ud_out(1:end-1));
 legend('initial guess','Newton solver output');
 title('double pulse');
+
+findsymm(xout, ud_out, config);
 
 

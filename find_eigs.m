@@ -6,9 +6,9 @@
 % load 5single;
 
 % load Sh4double1a; par.b=b;
-load 6double2a;
+load 4double1a;
 uout = ud_out;
-load 6single;
+% load 6single;
 % load 0singlefourier;
 % load 0singleneumann; 
 
@@ -29,10 +29,6 @@ h = 2*L/N;                      % current grid spacingn n b
 
 % % change domain size
 % L = 100;
-
-% average pulse or not
-average_pulse = true;
-% average_pulse = false;
 
 % % change speed c (to standardize between methods)
 % par.c = 82.5;
@@ -60,13 +56,19 @@ end
 % generate flipped and average wave
 [uflip, uavg] = flip_avg_wave(unew, config);
 
-% take our wave to be the average wave
+% average pulse or not
+average_pulse = true;
+% average_pulse = false;
+
 if average_pulse
     unew = uavg;
+    [xnew, unew] = fsolveequation(xnew, unew, par, N, L, config, 10000);
 end
 
 % just the wave
 uwave = unew(1:end-1);
+[F,J] = equation(uwave,par,N,config,D,D2,D3,D4,D5);
+
 
 % % afsolve with nonintegrated equation (5th order)
 % options = optimset('Display','iter','Algorithm','levenberg-marquardt','MaxIter',30,'Jacobian','on');
@@ -129,22 +131,23 @@ uwave = unew(1:end-1);
 % in terms of c
 a = find_exp_wt(par.c);
 % a = a / 2;
-a = 0.2;
+% a = 0.2;
 a = 0;
 
 % eigenvalue of the constant solution for linearization about zero solution
 lambda_const = -a^5 + a^3 - par.c * a;
 
 % % use eig
-% [lambda, V, J] = eig_linear(xnew, uwave, par, config, 'nonintegrated', a);
+[lambda, V, J] = eig_linear(xnew, uwave, par, config, 'nonintegrated', a);
 
 % use eigs
-num    = 5;
+% num    = 5;
 % center = 0.6423i;
-center = 0.0215i;
-[lambda, V, J] = eigs_linear(xnew, uwave, par, config, num, center, 'nonintegrated', a);
+% center = 0.0215i;
+% [lambda, V, J] = eigs_linear(xnew, uwave, par, config, num, center, 'nonintegrated', a);
 
 eig_plot = false;
+% eig_plot = true;
 
 if eig_plot
     figure;
@@ -160,7 +163,7 @@ end
 % separation, we can extract the eigenvalues which are
 % to the R of the essential spectrum
 if a ~ 0
-    cutoff  = -2;
+    cutoff  = -1;
     indices = find(real(lambda) > cutoff);
     eVals = lambda(indices);
     eVecs = V(:, indices);
@@ -181,29 +184,68 @@ else
     integ = trapz(xnew,eVecs);
 end
 
-% % grab the eigenvalue nearest the one we found from the 
-% % weighted space
-target = 0.0215;
-% target = 0.6423;
-threshold = 0.01;
-index = 1;
-indices = find(abs(imag(lambda) - target) < threshold);
-eVals = lambda(indices);
-eVecs = V(:, indices);
+% imag_eval = true;
+imag_eval = true;
+if imag_eval
 
-% % eliminate small real part with fsolve
-% [vout, lout] = eig_solve(J, i*imag(eVals(index)), eVecs(:,index), 'fix_restrictnorm');
-% max_before = max( abs( J*eVecs(:,index) - eVals(index)*eVecs(:,index)) );
-% max_after  = max( abs( J*vout - lout*vout));
+    % % grab the eigenvalue nearest the one we found from the 
+    % % weighted space
+    % target = 0.0215;
+%     target = 0.6423;
+%     target = 0.0149;
+    target = 0.4596;
+    threshold = 0.01;
+    index = 1;
+    indices = find(abs(imag(lambda) - target) < threshold);
+    eVals = lambda(indices);
+    eVecs = V(:, indices);
 
-% % check for symmetry
-if strcmp(config.BC, 'periodic')
-    eVecFlip = [ eVecs(1) ; flip(eVecs(2:end)) ];
-%     voutflip = [ vout(1) ; flip(vout(2:end)) ];
-end;
+%     % eliminate small real part with fsolve
+%     [vout, lout] = eig_solve(J, i*imag(eVals(index)), eVecs(:,index), 'imag');
+%     [vout, lout] = eig_solve(J, i*imag(eVals(index)), eVecs(:,index), 'fix_restrictnorm');
 
-% plot(xnew, abs(eVecs) - abs(eVecFlip));
-max_flip = max( abs( abs(eVecs) - abs(eVecFlip) ) );
+    % for now, we don't need to do that since we will
+    % get rid of small real part when we fsolve for symmetry
+    vout = eVecs; 
+    lout = 1i*imag(eVals);   % take imaginary part only
+
+    % average real(vout(x)) and real(vout(-x))
+    vreal = real(vout);
+    vreal_avg = [vreal(1); 0.5*(vreal(2:end) + flip(vreal(2:end)))];
+
+    % start with the averaged real part
+    vreal = vreal_avg;
+    % compute the imaginary part from this
+    vimag = (-1/imag(lout))*J*vreal;
+
+    % fsolve and reconstruct eigenvector
+    % fsolve here can change real part, imag part of eigenvector
+    % fsolve here can change eigenvalue
+    % at present, fsolve has no additional symmetry-enforcing conditions
+    [v3_real, v3_imag, l3] = eig_solve_symm(J, lout, xnew, vreal, vimag, config);
+    v3 = v3_real + 1i * v3_imag;
+    max_before = max( abs( J*eVecs(:,index) - eVals(index)*eVecs(:,index)) );
+    max_after  = max( abs( J*vout - lout*vout));
+    max_symm   = max( abs( J*v3 - 1i*l3*v3));
+
+    max_real_flipdiff = max( real(v3(2:end)) - flip(real(v3(2:end))) );
+    max_imag_flipdiff = max( imag(v3(2:end)) + flip(imag(v3(2:end))) );
+end
+%% construct another eigenfunction
+% 
+% if imag_eval
+%     [vout2, lout2] = eig_solve(J, i*imag(eVals(index)), vavg, 'fix_restrictnorm');
+%     max_avg  = max( abs( J*vout2 - lout*vout2));    
+% end
+
+% % % check for symmetry
+% if strcmp(config.BC, 'periodic')
+%     eVecFlip = [ eVecs(1) ; flip(eVecs(2:end)) ];
+% %     voutflip = [ vout(1) ; flip(vout(2:end)) ];
+% end;
+% 
+% % plot(xnew, abs(eVecs) - abs(eVecFlip));
+% max_flip = max( abs( abs(eVecs) - abs(eVecFlip) ) );
 
 % % integrals
 % integout = trapz(xnew,vout);
