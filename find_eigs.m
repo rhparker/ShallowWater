@@ -6,7 +6,7 @@
 % load 5single;
 
 % load Sh4double1a; par.b=b;
-load 4double1a;
+load 2double2a;
 uout = ud_out;
 % load 6single;
 % load 0singlefourier;
@@ -56,12 +56,13 @@ end
 % generate flipped and average wave
 [uflip, uavg] = flip_avg_wave(unew, config);
 
-% average pulse or not
+% average pulse or not; this makes things nicer
 average_pulse = true;
 % average_pulse = false;
 
 if average_pulse
     unew = uavg;
+    % run the averaged pulse through fsolve
     [xnew, unew] = fsolveequation(xnew, unew, par, N, L, config, 10000);
 end
 
@@ -109,7 +110,7 @@ uwave = unew(1:end-1);
 % % and that derivative is eigenvector of J with eigenvalue 0
 %
 
-[F,J] = equation(uavg(1:end-1),par,N,config,D,D2,D3,D4,D5);
+% [F,J] = equation(uavg(1:end-1),par,N,config,D,D2,D3,D4,D5);
 % plot(xnew, F);
 
 % [F,J] = integratedequation(uwave,par,N,config,D,D2,D3,D4,D5);
@@ -184,17 +185,20 @@ else
     integ = trapz(xnew,eVecs);
 end
 
-% imag_eval = true;
+% imag_eval = false;
 imag_eval = true;
-if imag_eval
 
+if imag_eval
     % % grab the eigenvalue nearest the one we found from the 
     % % weighted space
     % target = 0.0215;
 %     target = 0.6423;
-%     target = 0.0149;
-    target = 0.4596;
-    threshold = 0.01;
+%     target = 0.0149;     % 5double1a, N=256, c=4.4459
+    target = 0.0015;     % 2double2a, N=256, c=9.4812
+%     target = 0.0629;     % 2double1a, N=256, c=9.4812
+%     target = 0.4596;   % 4double1a, N=256, c=32.6519
+%     target = 0.2277;   % 3double1a, N=256, c=20.6361
+    threshold = 0.001;
     index = 1;
     indices = find(abs(imag(lambda) - target) < threshold);
     eVals = lambda(indices);
@@ -225,11 +229,17 @@ if imag_eval
     [v3_real, v3_imag, l3] = eig_solve_symm(J, lout, xnew, vreal, vimag, config);
     v3 = v3_real + 1i * v3_imag;
     max_before = max( abs( J*eVecs(:,index) - eVals(index)*eVecs(:,index)) );
-    max_after  = max( abs( J*vout - lout*vout));
+%     max_after  = max( abs( J*vout - lout*vout));
     max_symm   = max( abs( J*v3 - 1i*l3*v3));
+
+    max_real_flipdiff_before = max( real(eVecs(2:end)) - flip(real(eVecs(2:end))) );
+    max_imag_flipdiff_before = max( imag(eVecs(2:end)) + flip(imag(eVecs(2:end))) );
 
     max_real_flipdiff = max( real(v3(2:end)) - flip(real(v3(2:end))) );
     max_imag_flipdiff = max( imag(v3(2:end)) + flip(imag(v3(2:end))) );
+    
+    imag_diff_before = max( imag(eVecs) - (-1/imag(eVals))*J*real(eVecs));
+    imag_diff_symm   = max( imag(v3) - (-1/l3)*J*real(v3));
 end
 %% construct another eigenfunction
 % 

@@ -19,9 +19,9 @@ shallow = strcmp(config.equation,'shallow');
 % index = 537;      % KdVfourier128, c = 40.9572
 % index = 591;      % KdVfourier256_40, c = 40.9273
 
-index = 1465;       % KdV_Fourier_256, c = 40.9410
-index = 1600;
-index = 200;
+% index = 1465;       % KdV_Fourier_256, c = 40.9410
+% index = 1600;
+index = 400;
 
 % wave data and speed c
 uout  = uc(:, index);
@@ -119,7 +119,7 @@ zDer_x    = xfine(zDer);            % x values of deriative
 
 % another way to do this, using known spacing
 start = 1;
-index = 2;
+index = 4;
 join_x = zDer_x(start) + (index - 1)*(spacing/2);
 
 % add this line to find half-way waves
