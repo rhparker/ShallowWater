@@ -26,20 +26,31 @@
 %
 % tail plots (look for exp decay)
 %
-load 5double1;
-x          = xout;
-tail_fn    = ud_out;
+load 5double1a_eigs;
+x          = xnew;
+tail_fn    = real(v5);
 plot_start = length(x)/2 + 35;
-plot_end   = length(x)-25;
+plot_end   = length(x)-37;
 xplot = x(plot_start:plot_end);
 yplot = log( abs(tail_fn(plot_start:plot_end)) );
 par.c = uout(end);
-nu = roots([1 0 -1 0 par.c]);
-decay = abs(real(nu(1)));
-plot_name = ['Log of single pulse'];
-plot_params = ['  c = ', num2str(par.c),'  mu = ',num2str(decay),'   ',];
+
+% % roots of linearization about zero solution
+% % use for pulses
+% nu = roots([1 0 -1 0 par.c]);
+% decay = abs(real(nu(1)));
+
+% roots of eigenvalue problem at lambda
+% use for eigenfunctions
+lambda = l5 * 1i;
+c = par.c
+nu = roots([-1 0 1 0 -c lambda ]);
+decay = abs(max( real( nu(find(real(nu) < -1e-10)))));
+
+plot_name = ['Log of eigenfunction, Double Pulse 2'];
+plot_params = ['  c = ', num2str(c),'  lambda = ', num2str(lambda)];
 plot_config = [config.method, '  N = ',num2str(length(xout))];
-plot_title = [plot_name, plot_params, plot_config];
+plot_title = [plot_name, plot_params];
 
 
 % % maxflip plots
@@ -62,5 +73,5 @@ scatter(xplot, yplot, marker_size, 'filled');
 % best fit line 
 bestfit = fit(xplot, yplot, 'poly1');
 plot(xplot, bestfit(xplot));
-title({ plot_title, strcat('slope =  ',num2str(abs(bestfit.p1))) } );
+title({ plot_title, strcat('mu = ',num2str(decay),'   slope =  ',num2str(abs(bestfit.p1))) } );
 

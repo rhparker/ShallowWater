@@ -6,7 +6,7 @@
 % load 5single;
 
 % load Sh4double1a; par.b=b;
-load 2double2a;
+load 5double1a;
 uout = ud_out;
 % load 6single;
 % load 0singlefourier;
@@ -193,11 +193,12 @@ if imag_eval
     % % weighted space
     % target = 0.0215;
 %     target = 0.6423;
-%     target = 0.0149;     % 5double1a, N=256, c=4.4459
-    target = 0.0015;     % 2double2a, N=256, c=9.4812
+    target = 0.0149;     % 5double1a, N=256, c=4.4459
+%     target = 0.0015;     % 2double2a, N=256, c=9.4812
 %     target = 0.0629;     % 2double1a, N=256, c=9.4812
 %     target = 0.4596;   % 4double1a, N=256, c=32.6519
 %     target = 0.2277;   % 3double1a, N=256, c=20.6361
+ 
     threshold = 0.001;
     index = 1;
     indices = find(abs(imag(lambda) - target) < threshold);
@@ -207,39 +208,48 @@ if imag_eval
 %     % eliminate small real part with fsolve
 %     [vout, lout] = eig_solve(J, i*imag(eVals(index)), eVecs(:,index), 'imag');
 %     [vout, lout] = eig_solve(J, i*imag(eVals(index)), eVecs(:,index), 'fix_restrictnorm');
+%     max_after  = max( abs( J*vout - lout*vout));
 
     % for now, we don't need to do that since we will
     % get rid of small real part when we fsolve for symmetry
     vout = eVecs; 
     lout = 1i*imag(eVals);   % take imaginary part only
-
-    % average real(vout(x)) and real(vout(-x))
-    vreal = real(vout);
-    vreal_avg = [vreal(1); 0.5*(vreal(2:end) + flip(vreal(2:end)))];
-
-    % start with the averaged real part
-    vreal = vreal_avg;
-    % compute the imaginary part from this
-    vimag = (-1/imag(lout))*J*vreal;
-
-    % fsolve and reconstruct eigenvector
-    % fsolve here can change real part, imag part of eigenvector
-    % fsolve here can change eigenvalue
-    % at present, fsolve has no additional symmetry-enforcing conditions
-    [v3_real, v3_imag, l3] = eig_solve_symm(J, lout, xnew, vreal, vimag, config);
-    v3 = v3_real + 1i * v3_imag;
     max_before = max( abs( J*eVecs(:,index) - eVals(index)*eVecs(:,index)) );
-%     max_after  = max( abs( J*vout - lout*vout));
-    max_symm   = max( abs( J*v3 - 1i*l3*v3));
-
     max_real_flipdiff_before = max( real(eVecs(2:end)) - flip(real(eVecs(2:end))) );
     max_imag_flipdiff_before = max( imag(eVecs(2:end)) + flip(imag(eVecs(2:end))) );
-
-    max_real_flipdiff = max( real(v3(2:end)) - flip(real(v3(2:end))) );
-    max_imag_flipdiff = max( imag(v3(2:end)) + flip(imag(v3(2:end))) );
-    
     imag_diff_before = max( imag(eVecs) - (-1/imag(eVals))*J*real(eVecs));
-    imag_diff_symm   = max( imag(v3) - (-1/l3)*J*real(v3));
+
+%     % start with averaged real part and construct symmetric eigenvector
+%     % average real(vout(x)) and real(vout(-x))
+%     vreal = real(vout);
+%     vreal_avg = [vreal(1); 0.5*(vreal(2:end) + flip(vreal(2:end)))];
+%     % start with the averaged real part
+%     vreal = vreal_avg;
+%     % compute the imaginary part from this
+%     vimag = (-1/imag(lout))*J*vreal;
+% 
+%     % fsolve and reconstruct eigenvector
+%     % fsolve here can change real part, imag part of eigenvector
+%     % fsolve here can change eigenvalue
+%     % at present, fsolve has no additional symmetry-enforcing conditions
+%     [v3_real, v3_imag, l3] = eig_solve_symm(J, lout, xnew, vreal, vimag, config);
+%     v3 = v3_real + 1i * v3_imag;
+%     max_symm   = max( abs( J*v3 - 1i*l3*v3));
+%     max_real_flipdiff = max( real(v3(2:end)) - flip(real(v3(2:end))) );
+%     max_imag_flipdiff = max( imag(v3(2:end)) + flip(imag(v3(2:end))) );
+%     imag_diff_symm   = max( imag(v3) - (-1/l3)*J*real(v3));
+
+    % construct symmetric eigenvalue by rotation
+    [v4,theta]   = rotate_evec(xnew, vout, config);
+    max_rotate   = max( abs( J*v4 - eVals*v4));
+    max_real_flipdiff = max( real(v4(2:end)) - flip(real(v4(2:end))) );
+    max_imag_flipdiff = max( imag(v4(2:end)) + flip(imag(v4(2:end))) );
+    [v5_real, v5_imag, l5] = eig_solve_symm(J, eVals, xnew, real(v4), imag(v4), config);
+    v5 = v5_real + 1i * v5_imag;    
+    max_rotate_fsolve   = max( abs( J*v5 - 1i*l5*v5));
+    max_real_flipdiff_fsolve = max( real(v5(2:end)) - flip(real(v5(2:end))) );
+    max_imag_flipdiff_fsolve = max( imag(v5(2:end)) + flip(imag(v5(2:end))) );
+
 end
 %% construct another eigenfunction
 % 
