@@ -30,7 +30,7 @@ load 5double1a_eigs;
 x          = xnew;
 tail_fn    = real(v5);
 plot_start = length(x)/2 + 35;
-plot_end   = length(x)-37;
+plot_end   = length(x)-20;
 xplot = x(plot_start:plot_end);
 yplot = log( abs(tail_fn(plot_start:plot_end)) );
 par.c = uout(end);
@@ -58,20 +58,23 @@ plot_title = [plot_name, plot_params];
 % yplot = log( mf(:,3) );
 % xplot = log( mf(:,2) );
 
-
 figure;
-hold on;
-marker_size = 10;
+scatter(xplot, tail_fn(plot_start:plot_end).*exp(decay*xplot), marker_size, 'filled');
 
-% titles and labels
-title(plot_title);
-ylabel('log of pulse');
-xlabel('x');
 
-scatter(xplot, yplot, marker_size, 'filled');
-
-% best fit line 
-bestfit = fit(xplot, yplot, 'poly1');
-plot(xplot, bestfit(xplot));
-title({ plot_title, strcat('mu = ',num2str(decay),'   slope =  ',num2str(abs(bestfit.p1))) } );
+% figure;
+% hold on;
+% marker_size = 10;
+% 
+% % titles and labels
+% title(plot_title);
+% ylabel('log of pulse');
+% xlabel('x');
+% 
+% scatter(xplot, yplot, marker_size, 'filled');
+% 
+% % best fit line 
+% bestfit = fit(xplot, yplot, 'poly1');
+% plot(xplot, bestfit(xplot));
+% title({ plot_title, strcat('mu = ',num2str(decay),'   slope =  ',num2str(abs(bestfit.p1))) } );
 

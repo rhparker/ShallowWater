@@ -26,7 +26,7 @@ function J = get_jacobian(x, u, par, config, version, exp_wt)
     % whether to use integrated version or not
     integrated = strcmp(version, 'integrated');
     if integrated
-        [~,J] = integratedequation(u,par,N,config,D,D2,D3,D4,D5);
+        [~,J] = integratedequation(x,u,par,N,config,D,D2,D3,D4,D5);
     else
         [~,J] = equation(u,par,N,config,D,D2,D3,D4,D5,exp_wt); 
     end

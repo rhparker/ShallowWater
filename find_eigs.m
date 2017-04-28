@@ -6,7 +6,8 @@
 % load 5single;
 
 % load Sh4double1a; par.b=b;
-load 5double1a;
+load 2double1a;
+% load 5double1;
 uout = ud_out;
 % load 6single;
 % load 0singlefourier;
@@ -121,6 +122,9 @@ uwave = unew(1:end-1);
 % num = 50;
 % center = -100;
 % [int_lambda, ~, ~] = eigs_linear(xout, uwave, par, config, num, center, 'integrated');
+config_nosymm = config;
+config_nosymm.symmetry = 'none';
+[int_lambda, ~, ~] = eig_linear(xout, uwave, par, config_nosymm, 'integrated');
 % plot(int_lambda, zeros(length(int_lambda)), '.');
 
 
@@ -177,7 +181,7 @@ if a ~ 0
     
 % otherwise grab the eigenvalues off the real axis
 else
-    cutoff = 0.1;
+    cutoff = 0.001;
 %     indices = find( abs(real(lambda)) > cutoff);
     indices = find( real(lambda) > cutoff);
     eVals = lambda(indices);
@@ -193,12 +197,15 @@ if imag_eval
     % % weighted space
     % target = 0.0215;
 %     target = 0.6423;
-    target = 0.0149;     % 5double1a, N=256, c=4.4459
-%     target = 0.0015;     % 2double2a, N=256, c=9.4812
+%     target = 0.0149;     % 5double1a, N=256, c=4.4459
+    target = 0.0015;     % 2double2a, N=256, c=9.4812
 %     target = 0.0629;     % 2double1a, N=256, c=9.4812
 %     target = 0.4596;   % 4double1a, N=256, c=32.6519
 %     target = 0.2277;   % 3double1a, N=256, c=20.6361
- 
+%     target = 2.1633e-04; % 7double1a, N=256, c=1
+%     target = 0.0502;     % 7double0, N=256, c=1
+    
+%     threshold = 0.001;
     threshold = 0.001;
     index = 1;
     indices = find(abs(imag(lambda) - target) < threshold);

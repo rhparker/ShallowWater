@@ -21,7 +21,11 @@ shallow = strcmp(config.equation,'shallow');
 
 % index = 1465;       % KdV_Fourier_256, c = 40.9410
 % index = 1600;
-index = 400;
+% index = 400;
+index = 42;        % KdV_Fourier_256, c = 1.0056
+index = 200;
+
+index = 1;
 
 % wave data and speed c
 uout  = uc(:, index);
@@ -39,7 +43,8 @@ uwave = uout(1:end-1);
 % par.c = 18.67;
 % par.c = 16;
 % par.c = 5;
-% par.c = 40.9355;
+
+% par.c = 1.0;
 % uout(end) = par.c;
 
 % adjust N if we want to
@@ -47,6 +52,10 @@ uwave = uout(1:end-1);
 
 % N=2000;
 % L=50;
+
+% L=50;
+% N=512;
+% h=2*L/N;
 
 config.symmetry = 'L2squaredflip';
 
@@ -119,7 +128,7 @@ zDer_x    = xfine(zDer);            % x values of deriative
 
 % another way to do this, using known spacing
 start = 1;
-index = 4;
+index = 1;
 join_x = zDer_x(start) + (index - 1)*(spacing/2);
 
 % add this line to find half-way waves
