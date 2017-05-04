@@ -2,7 +2,9 @@
 
 % load initial data
 
-function [data, time, xnew] = runKdV(x, u, config, iter, save)
+function [data, time, xnew] = runKdV_RK4(x, u, config, iter, save)
+
+    % how often to save data
     if ~exist('save','var')
     	save = 1;
     end
@@ -32,8 +34,8 @@ function [data, time, xnew] = runKdV(x, u, config, iter, save)
     %% do timestepping
 
     % parameters for time-stepping
-    delta_t = 0.001;                 % time step size
-    total_iter = iter;            % number of iterations 
+    delta_t = 1 / (N^2);           % time step size
+    total_iter = iter;               % number of iterations 
 
     uin = uwave;
 
@@ -67,17 +69,19 @@ function [data, time, xnew] = runKdV(x, u, config, iter, save)
     G = -1i*delta_t*k;
     Ehalf = exp(A*delta_t/2); 
     E = Ehalf.^2;
+        
 
     wb = waitbar(0,'please wait...');
     
     for iter = 1:total_iter
    
-%         % EB scheme (implicit)
-%         uhat_next = fsolve( @(u) u - E.*uhat -G.*fft(real(ifft(u)).^2), uhat);
+        % RK4 scheme
+        g1 = G.*fft(real( ifft( uhat ) ).^2);
+        g2 = G.*fft(real( ifft(Ehalf.*(uhat + g1/2)) ).^2);
+        g3 = G.*fft(real( ifft(Ehalf.*uhat + g2/2) ).^2);
+        g4 = G.*fft(real( ifft(E.*uhat+Ehalf.*g3) ).^2);
+        uhat_next = E.*uhat + (E.*g1 + 2*Ehalf.*(g2+g3) + g4)/6;
 
-        % CN scheme (implicit)
-        uhat_next = fsolve( @(u) u - E.*uhat -(G/2).*( fft(real(ifft(u)).^2) + E.*fft(real(ifft(uhat)).^2) ), uhat);
- 
         % save only on specified iterations
         if mod(iter, save) == 0
             F_data = [ F_data uhat_next ];
@@ -87,6 +91,7 @@ function [data, time, xnew] = runKdV(x, u, config, iter, save)
         end
         
         uhat = uhat_next;
+
     end
 
     close(wb);

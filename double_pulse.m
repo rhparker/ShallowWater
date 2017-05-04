@@ -23,9 +23,8 @@ shallow = strcmp(config.equation,'shallow');
 % index = 1600;
 % index = 400;
 index = 42;        % KdV_Fourier_256, c = 1.0056
-index = 200;
+index = 400;
 
-index = 1;
 
 % wave data and speed c
 uout  = uc(:, index);

@@ -10,4 +10,10 @@ for index = 1:length(uc)
     heights = [heights; max(pks)];
 end
 
-plot(speeds, heights)
+bestfit = fit(speeds, heights, 'poly1');
+slope =  num2str(abs(bestfit.p1));
+
+plot(speeds, heights);
+xlabel('speed (c)');
+ylabel('peak height');
+title(strcat('Peak height versus speed for KdV5: slope ',slope));
