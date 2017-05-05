@@ -9,7 +9,7 @@ function [dist, centers] = peak_distances(x, data, skip)
     data_size = size(data);
     
     % make the fine grid
-    finepoints = 8192;
+    finepoints = 65536;
     L = -x(1);
     xfine = linspace(-L, L, finepoints+1);
     xfine = xfine(1:end-1);

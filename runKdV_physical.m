@@ -86,7 +86,7 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, save)
 %     % data vector for EF/EB
 %     dataE = data;
 
-%     wb = waitbar(0,'please wait...');
+    wb = waitbar(0,'please wait...');
     
     for iter = [1:total_iter]
         % advection eq, for testing
@@ -119,7 +119,7 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, save)
         if mod(iter, save) == 0
             data = [ data unew ];
             time = [ time k*iter ];
-%             waitbar(iter / total_iter);
+            waitbar(iter / total_iter);
         end
         
     end
