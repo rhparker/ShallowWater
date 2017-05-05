@@ -4,7 +4,7 @@
 
 % load initial data
 
-function [data, time, xnew] = runKdV_physical(x, u, config, iter, save_steps)
+function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, save_steps)
 
     % how often to save data
     if ~exist('save_steps','var')
@@ -17,7 +17,6 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, save_steps)
     L = -x(1);                      % current domain length;
     h = 2*L/N;                      % current grid spacingn n b
     
-    N = 1024;
     % if we change stuff, run through Newton solver
     if N ~= length(x) || L ~= -x(1) || par.c ~= u(end)
         % interpolate onto a larger grid, or with a longer domain, or with
@@ -50,13 +49,13 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, save_steps)
 
     % modify wave
 
-    um = stretch_wave(uin, 2);
-%     um = compress_wave(uin, 1);
-    
-    % um = uwave + gaussmf(xout, [1 -3.5156]) + gaussmf(xout, [1 3.5156]);
-    % um = uwave * 0.90;
-
-    uin = um;
+    if sep > 0
+        um = stretch_wave(uin, sep);
+        uin = um;
+    elseif sep < 0
+        um = compress_wave(uin, abs(sep));
+        uin = um;
+    end
 
     % if we modify c, wave no longer stationary solution
     % so translates one way or the other based on difference
@@ -87,7 +86,7 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, save_steps)
 %     % data vector for EF/EB
 %     dataE = data;
 
-    wb = waitbar(0,'please wait...');
+%     wb = waitbar(0,'please wait...');
     
     for iter = [1:total_iter]
         % advection eq, for testing
@@ -120,7 +119,7 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, save_steps)
         if mod(iter, save_steps) == 0
             data = [ data unew ];
             time = [ time k*iter ];
-            waitbar(iter / total_iter);
+%            waitbar(iter / total_iter);
         end
         
     end
