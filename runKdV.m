@@ -3,7 +3,7 @@
 % load initial data
 
 function [data, time, xnew] = runKdV(x, u, config, iter, save_steps)
-    if ~exist('save','var')
+    if ~exist('save_steps','var')
     	save_steps = 1;
     end
 

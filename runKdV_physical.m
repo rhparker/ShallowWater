@@ -7,7 +7,7 @@
 function [data, time, xnew] = runKdV_physical(x, u, config, iter, save_steps)
 
     % how often to save data
-    if ~exist('save','var')
+    if ~exist('save_steps','var')
     	save_steps = 1;
     end
 
