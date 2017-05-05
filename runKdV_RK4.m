@@ -2,11 +2,11 @@
 
 % load initial data
 
-function [data, time, xnew] = runKdV_RK4(x, u, config, iter, save)
+function [data, time, xnew] = runKdV_RK4(x, u, config, iter, save_steps)
 
     % how often to save data
     if ~exist('save','var')
-    	save = 1;
+    	save_steps = 1;
     end
 
     % default parameters
@@ -83,7 +83,7 @@ function [data, time, xnew] = runKdV_RK4(x, u, config, iter, save)
         uhat_next = E.*uhat + (E.*g1 + 2*Ehalf.*(g2+g3) + g4)/6;
 
         % save only on specified iterations
-        if mod(iter, save) == 0
+        if mod(iter, save_steps) == 0
             F_data = [ F_data uhat_next ];
             data = [ data real(ifft(uhat_next)) ];
             time = [ time delta_t*iter ];

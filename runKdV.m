@@ -2,9 +2,9 @@
 
 % load initial data
 
-function [data, time, xnew] = runKdV(x, u, config, iter, save)
+function [data, time, xnew] = runKdV(x, u, config, iter, save_steps)
     if ~exist('save','var')
-    	save = 1;
+    	save_steps = 1;
     end
 
     % default parameters
@@ -79,7 +79,7 @@ function [data, time, xnew] = runKdV(x, u, config, iter, save)
         uhat_next = fsolve( @(u) u - E.*uhat -(G/2).*( fft(real(ifft(u)).^2) + E.*fft(real(ifft(uhat)).^2) ), uhat);
  
         % save only on specified iterations
-        if mod(iter, save) == 0
+        if mod(iter, save_steps) == 0
             F_data = [ F_data uhat_next ];
             data = [ data real(ifft(uhat_next)) ];
             time = [ time delta_t*iter ];

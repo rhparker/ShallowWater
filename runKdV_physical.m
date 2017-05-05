@@ -4,11 +4,11 @@
 
 % load initial data
 
-function [data, time, xnew] = runKdV_physical(x, u, config, iter, save)
+function [data, time, xnew] = runKdV_physical(x, u, config, iter, save_steps)
 
     % how often to save data
     if ~exist('save','var')
-    	save = 1;
+    	save_steps = 1;
     end
 
     % default parameters
@@ -17,6 +17,7 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, save)
     L = -x(1);                      % current domain length;
     h = 2*L/N;                      % current grid spacingn n b
     
+    N = 1024;
     % if we change stuff, run through Newton solver
     if N ~= length(x) || L ~= -x(1) || par.c ~= u(end)
         % interpolate onto a larger grid, or with a longer domain, or with
@@ -116,7 +117,7 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, save)
         end
         
         % if we are saving our data
-        if mod(iter, save) == 0
+        if mod(iter, save_steps) == 0
             data = [ data unew ];
             time = [ time k*iter ];
             waitbar(iter / total_iter);
