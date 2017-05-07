@@ -4,10 +4,14 @@
 
 function derivs = peak_derivs(t, dist)
 
-    % left and right derivatives, 4th order accuracy
-    % we can ignore these if we want
-    Lderiv = [-49/20 6 -15/2 20/3 -15/4 6/5 -1/6];
-    Rderiv = flip(Lderiv);
+%     % left and right derivatives, 4th order accuracy
+%     % we can ignore these if we want
+%     Lderiv = [-49/20 6 -15/2 20/3 -15/4 6/5 -1/6];
+%     Rderiv = flip(Lderiv);
+
+    % L and R derivatives, 2nd order
+    Lderiv = [-3/2 2 -1/2];
+    Rderiv = [1/2 -2 3/2];
     
     % central derivatives
     % 6th order accuracy

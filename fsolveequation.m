@@ -35,11 +35,16 @@ if (N ~= N_old) || (L ~= L_old)
         xout = linspace(-L, L, N+1)';
         xout = xout(1:end-1);
     end
-    u = interp1(xold,uold(1:end-1),xout);
+    
+    % linear interpolation
+%     u = interp1(xold,uold(1:end-1),xout);
+%     % will have some NaN values at the ends of u
+%     % replace these with 0
+%     u(isnan(u)) = 0;
 
-    % will have some NaN values at the ends of u
-    % replace these with 0
-    u(isnan(u)) = 0;
+    % fourier interpolation
+    u = interpft(uold(1:end-1), N);
+
 else
     xout = xold;
 end

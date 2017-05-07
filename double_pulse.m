@@ -127,7 +127,7 @@ zDer_x    = xfine(zDer);            % x values of deriative
 
 % another way to do this, using known spacing
 start = 1;
-index = 1;
+index = 3;
 join_x = zDer_x(start) + (index - 1)*(spacing/2);
 
 % add this line to find half-way waves

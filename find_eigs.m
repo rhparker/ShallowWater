@@ -6,7 +6,7 @@
 % load 5single;
 
 % load Sh4double1a; par.b=b;
-load 2double1a;
+load 2double2;
 % load 5double1;
 uout = ud_out;
 % load 6single;
@@ -58,8 +58,8 @@ end
 [uflip, uavg] = flip_avg_wave(unew, config);
 
 % average pulse or not; this makes things nicer
-average_pulse = true;
-% average_pulse = false;
+% average_pulse = true;
+average_pulse = false;
 
 if average_pulse
     unew = uavg;
@@ -122,9 +122,9 @@ uwave = unew(1:end-1);
 % num = 50;
 % center = -100;
 % [int_lambda, ~, ~] = eigs_linear(xout, uwave, par, config, num, center, 'integrated');
-config_nosymm = config;
-config_nosymm.symmetry = 'none';
-[int_lambda, ~, ~] = eig_linear(xout, uwave, par, config_nosymm, 'integrated');
+% config_nosymm = config;
+% config_nosymm.symmetry = 'none';
+% [int_lambda, ~, ~] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
 % plot(int_lambda, zeros(length(int_lambda)), '.');
 
 
@@ -151,8 +151,8 @@ lambda_const = -a^5 + a^3 - par.c * a;
 % center = 0.0215i;
 % [lambda, V, J] = eigs_linear(xnew, uwave, par, config, num, center, 'nonintegrated', a);
 
-eig_plot = false;
-% eig_plot = true;
+% eig_plot = false;
+eig_plot = true;
 
 if eig_plot
     figure;
@@ -181,16 +181,16 @@ if a ~ 0
     
 % otherwise grab the eigenvalues off the real axis
 else
-    cutoff = 0.001;
+    cutoff = 0.00001;
 %     indices = find( abs(real(lambda)) > cutoff);
-    indices = find( real(lambda) > cutoff);
+    indices = find( abs(real(lambda)) > cutoff);
     eVals = lambda(indices);
     eVecs = V(:, indices);
     integ = trapz(xnew,eVecs);
 end
 
-% imag_eval = false;
-imag_eval = true;
+imag_eval = false;
+% imag_eval = true;
 
 if imag_eval
     % % grab the eigenvalue nearest the one we found from the 

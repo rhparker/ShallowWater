@@ -9,7 +9,7 @@ function [dist, centers] = peak_distances(x, data, skip)
     data_size = size(data);
     
     % make the fine grid
-    finepoints = 65536;
+    finepoints = 20000;
     L = -x(1);
     xfine = linspace(-L, L, finepoints+1);
     xfine = xfine(1:end-1);
@@ -18,15 +18,15 @@ function [dist, centers] = peak_distances(x, data, skip)
     
     for index = (1:data_size_scaled)*skip
 
-%         % cubic spline method
-%         uspline = spline(x, data(:, index), xfine); 
-%         xout = xfine;
-%         uout = uspline;
-        
-        % Fourier interpolation method
-        ufourierinterp = interpft(data(:, index), finepoints);
+        % cubic spline method
+        uspline = spline(x, data(:, index), xfine); 
         xout = xfine;
-        uout = ufourierinterp;
+        uout = uspline;
+        
+%         % Fourier interpolation method
+%         ufourierinterp = interpft(data(:, index), finepoints);
+%         xout = xfine;
+%         uout = ufourierinterp;
         
         [pks, locs] = findpeaks(uout);
         [d1, d2] = sort(pks);

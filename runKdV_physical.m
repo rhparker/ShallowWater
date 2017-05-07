@@ -49,12 +49,26 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, save_step
 
     % modify wave
 
-    if sep > 0
-        um = stretch_wave(uin, sep);
-        uin = um;
-    elseif sep < 0
-        um = compress_wave(uin, abs(sep));
-        uin = um;
+    % if sep is an integer, then space out given number of grid points
+    if mod(sep, 1) == 0 
+        if sep > 0
+            um = stretch_wave(uin, sep);
+            uin = um;
+        elseif sep < 0
+            um = compress_wave(uin, abs(sep));
+            uin = um;
+        end
+    % if not an integer, only do for positive sep    
+    else
+        if sep > 0
+            fine_points = 65536;
+            fine_spacing = 2*L/fine_points;                      % current grid spacingn n b
+            ufine = interpft(uin, fine_points);
+            stretch_pts = floor( sep / fine_spacing);
+            ustretch = stretch_wave(ufine, stretch_pts);
+            um = interpft(ustretch, N);
+            uin = um;
+        end 
     end
 
     % if we modify c, wave no longer stationary solution
@@ -89,11 +103,6 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, save_step
 %     wb = waitbar(0,'please wait...');
     
     for iter = [1:total_iter]
-        % advection eq, for testing
-        % unew = RK4( data(:,end), k, @(u) D*u );
-
-        % 5th order KdV equation  / RK4 (appears unstable)
-        % unew = RK4( data(:,end), k, @(u) KdV(u,par,N,D,D2,D3,D4,D5,0) );
 
         % EF / EB splitting, doesn't appear to work
     %     u = dataE(:,end);
@@ -126,6 +135,7 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, save_step
 
 %     close(wb);
     
+% %   plot final step
 %     plot(xnew, uwave, xnew, data(:,1), xnew, data(:,end));
 %     legend('original 2-pulse', 'start (initial perturbation)', 'end (after timestepping');
 %     title(strcat('KdV5 starting with double pulse, steps: ',num2str(total_iter)));
@@ -136,9 +146,14 @@ end
 function uout = stretch_wave(uin, spacing)
     center = length(uin)/2 + 1;
     center_val = uin(center);
-    center_spacer = center_val * ones(spacing*2 + 1, 1);
-    left_piece = uin(1 + spacing:center - 1);
-    uout = [left_piece; center_spacer; flip(left_piece(2:end))];
+    center_spacer = center_val * ones(spacing + 1, 1);
+    left_piece = uin(1 + ceil(spacing/2):center - 1);
+    if mod(spacing, 2) == 0
+        right_piece = flip(left_piece(2:end));
+    else 
+        right_piece = flip(left_piece(1:end));
+    end
+    uout = [left_piece; center_spacer; right_piece ];
 end
 
 function uout = compress_wave(uin, spacing)
