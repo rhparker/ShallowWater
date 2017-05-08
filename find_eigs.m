@@ -6,7 +6,7 @@
 % load 5single;
 
 % load Sh4double1a; par.b=b;
-load 2double2;
+load 2double1a;
 % load 5double1;
 uout = ud_out;
 % load 6single;
@@ -189,8 +189,8 @@ else
     integ = trapz(xnew,eVecs);
 end
 
-imag_eval = false;
-% imag_eval = true;
+% imag_eval = false;
+imag_eval = true;
 
 if imag_eval
     % % grab the eigenvalue nearest the one we found from the 
@@ -198,8 +198,8 @@ if imag_eval
     % target = 0.0215;
 %     target = 0.6423;
 %     target = 0.0149;     % 5double1a, N=256, c=4.4459
-    target = 0.0015;     % 2double2a, N=256, c=9.4812
-%     target = 0.0629;     % 2double1a, N=256, c=9.4812
+%     target = 0.0015;     % 2double2a, N=256, c=9.4812
+    target = 0.0629;     % 2double1a, N=256, c=9.4812
 %     target = 0.4596;   % 4double1a, N=256, c=32.6519
 %     target = 0.2277;   % 3double1a, N=256, c=20.6361
 %     target = 2.1633e-04; % 7double1a, N=256, c=1
