@@ -4,11 +4,13 @@
 
 % load initial data
 
-function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, save_steps)
+function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, options)
 
     % how often to save data
-    if ~exist('save_steps','var')
-    	save_steps = 1;
+    if isfield(options, 'save_steps')
+    	save_steps = options.save_steps;
+    else
+        save_steps = 1;
     end
 
     % default parameters
@@ -128,6 +130,7 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, save_step
         if mod(iter, save_steps) == 0
             data = [ data unew ];
             time = [ time k*iter ];
+            save output data time;
 %            waitbar(iter / total_iter);
         end
         

@@ -13,6 +13,9 @@ uout = ud_out;
 % load 0singlefourier;
 % load 0singleneumann; 
 
+uout = ud_out_1024;
+xout = xout_1024;
+
 % default parameters
 par.c = uout(end);              % wave speed
 N = length(xout);               % current grid size
