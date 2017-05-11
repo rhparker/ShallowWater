@@ -44,14 +44,19 @@ if isfield(config, 'symmetry')
     % enforce symmetry by requiring (discrete) integral of 
     % ( u(x) - u(-x) )^2 = 0, i.e. discrete L2 norm squared
     elseif strcmp(config.symmetry, 'L2squaredflip')
-        if strcmp(config.BC, 'periodic')
-            usum = u(2:N);
-        end
         % how much to weight the L2 difference integral
         weight = 1/max(F);
+        
+        if strcmp(config.BC, 'periodic')
+            usum = u(2:N);
+            symm_J   = weight * 4*h*[0 ; usum - flip(usum) ]; 
+        else
+            usum = u(1:N);
+            symm_J   = weight * 4*h*[ usum - flip(usum) ]; 
+        end
+
         % discrete integrals and Jacobians of them
         symm_sum = weight * h*sum( (usum - flip(usum)).^2 );
-        symm_J   = weight * 4*h*[0 ; usum - flip(usum) ]; 
         F = [F; symm_sum];
         J = [J; symm_J'];
 

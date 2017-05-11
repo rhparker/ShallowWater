@@ -6,15 +6,13 @@
 % load 5single;
 
 % load Sh4double1a; par.b=b;
-load 2double1a;
+load temp;
 % load 5double1;
 uout = ud_out;
 % load 6single;
 % load 0singlefourier;
 % load 0singleneumann; 
 
-uout = ud_out_1024;
-xout = xout_1024;
 
 % default parameters
 par.c = uout(end);              % wave speed
@@ -48,23 +46,24 @@ else
 end
 
 % differentiation matrices
-Fourier = strcmp(config.method,'Fourier');
-if Fourier
+
+if strcmp(config.method,'Fourier')
     [D, D2, D3, D4, D5] = D_fourier(N, L);
+elseif strcmp(config.method,'Chebyshev')
+    [D, D2, D3, D4, D5] = D_cheb(N, L, config);
 else
     % grid spacing
     h = 2*L/N;
     [D, D2, D3, D4, D5] = D_fdiff(N, h, config.BC, 3);
 end
 
-% generate flipped and average wave
-[uflip, uavg] = flip_avg_wave(unew, config);
-
-% average pulse or not; this makes things nicer
+% average pulse or not; this makes things automatically symmetric
 % average_pulse = true;
 average_pulse = false;
 
 if average_pulse
+    % generate flipped and average wave
+    [uflip, uavg] = flip_avg_wave(unew, config);
     unew = uavg;
     % run the averaged pulse through fsolve
     [xnew, unew] = fsolveequation(xnew, unew, par, N, L, config, 10000);
@@ -74,8 +73,7 @@ end
 uwave = unew(1:end-1);
 [F,J] = equation(uwave,par,N,config,D,D2,D3,D4,D5);
 
-
-% % afsolve with nonintegrated equation (5th order)
+% % fsolve with nonintegrated equation (5th order)
 % options = optimset('Display','iter','Algorithm','levenberg-marquardt','MaxIter',30,'Jacobian','on');
 % [unew,fval,exitflag,output,jacobian1]  = fsolve( @(u) equation(u,par,N,config,D,D2,D3,D4,D5),uwave,options);
 % unew  = [unew; par.c];
@@ -154,8 +152,8 @@ lambda_const = -a^5 + a^3 - par.c * a;
 % center = 0.0215i;
 % [lambda, V, J] = eigs_linear(xnew, uwave, par, config, num, center, 'nonintegrated', a);
 
-% eig_plot = false;
-eig_plot = true;
+eig_plot = false;
+% eig_plot = true;
 
 if eig_plot
     figure;
@@ -184,7 +182,7 @@ if a ~ 0
     
 % otherwise grab the eigenvalues off the real axis
 else
-    cutoff = 0.00001;
+    cutoff = 0.0001;
 %     indices = find( abs(real(lambda)) > cutoff);
     indices = find( abs(real(lambda)) > cutoff);
     eVals = lambda(indices);

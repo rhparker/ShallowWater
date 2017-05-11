@@ -6,13 +6,14 @@
 config.equation = 'KdV';
 
 % BCs to use
-config.BC       = 'periodic';
-% config.BC       = 'Neumann';
+% config.BC       = 'periodic';
+config.BC       = 'Neumann';
 
 % which numerical method to use
 % Fourier only works with periodic BCs
-config.method   = 'Fourier';
+% config.method   = 'Fourier';
 % config.method   = 'fdiff';
+config.method    = 'Chebyshev';
 
 % enforce symmetry
 config.symmetry = 'L2squaredflip';
@@ -21,7 +22,6 @@ config.symmetry = 'L2squaredflip';
 % true-false parameters, for convenience
 shallow = strcmp(config.equation,'shallow');
 periodic = strcmp(config.BC,'periodic');
-Fourier = strcmp(config.method,'Fourier');
 
 % domain bounds and size of grid
 % need more grid points for shallow water equation
@@ -36,12 +36,17 @@ else
 %     L = 200;
     L = 25;
 %     N = 501;              % finite difference
-    N = 257;                % Fourier
+%     N = 257;                % Fourier (will remove last point)
+    N = 256;                % Chebyshev
 end
 
-% domain and step size
-x = linspace(-L,L,N)';                    
-h = 2*L / (N-1);
+% domain
+if strcmp(config.method,'Chebyshev')
+    x = L*chebdif(N,1);
+else
+    x = linspace(-L,L,N)';                    
+    h = 2*L / (N-1);
+end
 
 % deal with boundary conditions
 if periodic
@@ -52,14 +57,13 @@ if periodic
 end
 
 % generate differentiation matrices
-if Fourier
-    % use Fourier spectral methods for periodic domain
-    % Fourier spectral method
-    % generate differentiation matrices
+if strcmp(config.method,'Fourier')
+    % use Fourier spectral methods
     [D, D2, D3, D4, D5] = D_fourier(N, L);
+elseif strcmp(config.method,'Chebyshev')
+    [D, D2, D3, D4, D5] = D_cheb(N, L, config);
 else
     % finite difference method
-    % generate differentation matrices
     [D, D2, D3, D4, D5] = D_fdiff(N, h, config.BC);
 end
 
@@ -121,7 +125,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 20;
+iterations = 1000;
 
 % continuation parameters
 contPar.numContSteps    = iterations;

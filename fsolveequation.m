@@ -6,9 +6,6 @@ if ~exist('iter','var')
     iter = 100;
 end
 
-% which method to use
-Fourier = strcmp(config.method,'Fourier');
-
 % % if we don't specify a new c, then take it from the 
 % % last element of uin
 % if ~exist('c','var')
@@ -36,22 +33,27 @@ if (N ~= N_old) || (L ~= L_old)
         xout = xout(1:end-1);
     end
     
-    % linear interpolation
-%     u = interp1(xold,uold(1:end-1),xout);
-%     % will have some NaN values at the ends of u
-%     % replace these with 0
-%     u(isnan(u)) = 0;
-
-    % fourier interpolation
-    u = interpft(uold(1:end-1), N);
+    if strcmp(config.method,'Fourier')
+        % fourier interpolation
+        u = interpft(uold(1:end-1), N);
+    else
+        % linear interpolation
+        u = interp1(xold,uold(1:end-1),xout);
+        % will have some NaN values at the ends of u
+        % replace these with 0
+        u(isnan(u)) = 0;
+    end
 
 else
     xout = xold;
 end
 
 % differentiation matrices
-if Fourier
+if strcmp(config.method,'Fourier')
     [D, D2, D3, D4, D5] = D_fourier(N, L);
+elseif strcmp(config.method,'Chebyshev')
+    [D, D2, D3, D4, D5] = D_cheb(N, L, config);
+% finite differences
 else
     % grid spacing
     h = xout(2) - xout(1);
