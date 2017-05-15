@@ -13,6 +13,16 @@ uout = ud_out;
 % load 0singlefourier;
 % load 0singleneumann; 
 
+load ucKdV_Cheb_257_Dirichlet;
+xout = x;
+uout = uc(:,5);
+
+% need square matrix for eigenvalues, so can't enforce
+% Dirichlet BCs here
+if isfield(config, 'Dirichlet') && strcmp(config.Dirichlet, 'true')
+    uout = [0 ; uout(1:end-1) ; 0 ; uout(end) ];
+    config.Dirichlet = false;
+end
 
 % default parameters
 par.c = uout(end);              % wave speed
@@ -32,8 +42,12 @@ h = 2*L/N;                      % current grid spacingn n b
 % % change domain size
 % L = 100;
 
+% L = 50;
+% N = 512;
+
 % % change speed c (to standardize between methods)
 % par.c = 82.5;
+
 
 % if we change stuff, run through Newton solver
 if N ~= length(xout) || L ~= -xout(1) || par.c ~= uout(end)
@@ -182,7 +196,7 @@ if a ~ 0
     
 % otherwise grab the eigenvalues off the real axis
 else
-    cutoff = 0.0001;
+    cutoff = 0.001;
 %     indices = find( abs(real(lambda)) > cutoff);
     indices = find( abs(real(lambda)) > cutoff);
     eVals = lambda(indices);
@@ -207,7 +221,7 @@ if imag_eval
 %     target = 0.0502;     % 7double0, N=256, c=1
     
 %     threshold = 0.001;
-    threshold = 0.001;
+    threshold = 0.1;
     index = 1;
     indices = find(abs(imag(lambda) - target) < threshold);
     eVals = lambda(indices);

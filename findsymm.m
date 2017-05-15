@@ -17,20 +17,34 @@ uorig = [uorig; c_start];
 % paramaters
 N = length(xout);
 L = -xout(1);
-h = (2*L)/N;
+h = 2*L / (N-1);
 
-% assume we use Fourier, for now
-[D, D2, D3, D4, D5] = D_fourier(N, L);
+if strcmp(config.method,'Fourier')
+    [D, D2, D3, D4, D5] = D_fourier(N, L);
+    usum = uout(2:end-1);
+    uwave = uout(1:end-1);
+elseif strcmp(config.method,'Chebyshev')
+    [D, D2, D3, D4, D5] = D_cheb(N, L, config);
+    usum = uout(1:end-1);
+    uwave = uout(1:end-1);
+elseif strcmp(config.method,'fdiff')
+    [D, D2, D3, D4, D5] = D_fdiff(N, h, config.BC);
+    usum = uout(1:end-1);
+    uwave = uout(1:end-1);
+end
 
-uwave = uout(1:end-1);
+if isfield(config, 'Dirichlet') && strcmp(config.Dirichlet,'true')
+    usum = [ 0; usum; 0 ];
+    uwave = usum;
+end
+
 par.c = uout(end);
 u2 = uout;
 
-usum = uout(2:N);
 flipdiff = abs(usum - flip(usum));
 symm_sum  = h * sum( (usum - flip(usum)).^2 );
 symm_sum2 = h * sum( (D*uwave).*(uwave - uorig(1:end-1)) );
-F =  integratedequation(xout,uwave,par,N,config,D,D2,D3,D4,D5,uwave);
+F =  integratedequation(xout,uout(1:end-1),par,N,config,D,D2,D3,D4,D5);
 
 disp(['symmetry enforcment: ',config.symmetry]);
 disp(['wave speed c: ',num2str(par.c)]);

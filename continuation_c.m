@@ -7,7 +7,11 @@ config.equation = 'KdV';
 
 % BCs to use
 % config.BC       = 'periodic';
-config.BC       = 'Neumann';
+config.BC        = 'Neumann';
+
+config.Dirichlet = 'true';
+% config.Dirichlet = 'false';
+
 
 % which numerical method to use
 % Fourier only works with periodic BCs
@@ -18,6 +22,7 @@ config.method    = 'Chebyshev';
 % enforce symmetry
 config.symmetry = 'L2squaredflip';
 % config.symmetry = 'compare';
+% config.symmetry = 'none';
 
 % true-false parameters, for convenience
 shallow = strcmp(config.equation,'shallow');
@@ -37,7 +42,8 @@ else
     L = 25;
 %     N = 501;              % finite difference
 %     N = 257;                % Fourier (will remove last point)
-    N = 256;                % Chebyshev
+%     N = 257;                % Chebyshev
+    N = 401;
 end
 
 % domain
@@ -87,6 +93,10 @@ else
     u = (105/338)*sech( x / (2 * sqrt(13) ) ).^4;
 end
 
+if strcmp(config.Dirichlet, 'true')
+    u = u(2:end-1);
+end
+
 % can use this as input for Newton solver
 uin = [u; par.c];
 
@@ -125,7 +135,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 1000;
+iterations = 10;
 
 % continuation parameters
 contPar.numContSteps    = iterations;
@@ -195,6 +205,8 @@ for index = 1:contPar.numContSteps
   v0 = v1;
   v1 = v;
 end
+
+uc = contdata;
 
 
 

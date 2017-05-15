@@ -131,6 +131,7 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, options)
             data = [ data unew ];
             time = [ time k*iter ];
             save output data time;
+            disp({iter, total_iter});
 %            waitbar(iter / total_iter);
         end
         
@@ -147,16 +148,24 @@ end
 
 % stretches wave in center by duplicating center value
 function uout = stretch_wave(uin, spacing)
-    center = length(uin)/2 + 1;
+    if mod(length(uin), 2) == 0
+        center = length(uin)/2 + 1;
+    else
+        center = (length(uin) + 1)/2;
+    end
     center_val = uin(center);
     center_spacer = center_val * ones(spacing + 1, 1);
     left_piece = uin(1 + ceil(spacing/2):center - 1);
-    if mod(spacing, 2) == 0
-        right_piece = flip(left_piece(2:end));
-    else 
-        right_piece = flip(left_piece(1:end));
-    end
+    right_piece = flip(left_piece(1:end));
+%     if mod(spacing, 2) == 0
+%         right_piece = flip(left_piece(2:end));
+%     else 
+%         right_piece = flip(left_piece(1:end));
+%     end
     uout = [left_piece; center_spacer; right_piece ];
+    if length(uout) > length(uin)
+        uout = uout( 1: length(uin) );
+    end
 end
 
 function uout = compress_wave(uin, spacing)

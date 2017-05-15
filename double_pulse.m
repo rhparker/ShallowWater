@@ -2,8 +2,10 @@
 
 % load from continuation data
 
-load ucKdV_Fourier_256;
+% load ucKdV_Fourier_256;
 % load ucKdV_Fourier_128;
+% load ucKdV_fdiff_501;
+load ucKdV_Cheb_257;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
@@ -22,15 +24,23 @@ shallow = strcmp(config.equation,'shallow');
 % index = 1465;       % KdV_Fourier_256, c = 40.9410
 % index = 1600;
 % index = 400;
-index = 42;        % KdV_Fourier_256, c = 1.0056
-index = 400;
+% index = 42;        % KdV_Fourier_256, c = 1.0056
+% index = 400;       % KdV_Fourier_256, c = 9.4812
 
+% index = 324;         % KdV_Cheb_256, c = 9.4844
+index = 200;
 
 % wave data and speed c
 uout  = uc(:, index);
-uwave = uout(1:end-1);
 par.c = uc(end,index);
 xout  = x;
+
+% chebychev points listed backwards, so flip around 
+% for double pulse construction
+if strcmp(config.method,'Chebyshev')
+    xout = flip(xout);
+    uout = [ flip(uout(1:end-1)) ; par.c ];
+end
 
 L = -xout(1);                 % domain size
 N = length(xout);             % number of grid points
@@ -38,46 +48,47 @@ h = (2*L)/N;
 uwave = uout(1:end-1);
 
 % adjust c if we want (to standardize)
-% par.c = 6.275;
-% par.c = 18.67;
-% par.c = 16;
-% par.c = 5;
-
 % par.c = 1.0;
-% uout(end) = par.c;
+% par.c = 9.4812;
 
-% adjust N if we want to
+uout(end) = par.c;
+
+% adjust N or L if we want to
+
 % N = 1024;
-
-% N=2000;
-% L=50;
-
-% L=50;
-% N=512;
+% L = 50;
 % h=2*L/N;
 
 config.symmetry = 'L2squaredflip';
+% config.symmetry = 'none';
 
 % if we change anything, need to send through fsolve again
 [xout, uout] = fsolveequation(x, uout, par, N, L, config);
 uwave = uout(1:end-1);
 h = (2*L)/N;
 
-findsymm(xout, uout, config)
+findsymm(xout, uout, config);
 
 %% make half-wave from full wave
 
 % where to split for the half wave depends on whether
 % we have periodic BCs or not
-if strcmp(config.BC,'Neumann')
-    offset = 0;
-% periodic BCs
+if strcmp(config.BC,'periodic')
+    center = N/2 + 1;
 else
-    offset = 1;
+    if mod(N,2) == 0
+        center = N/2 + 1;
+    else
+        center = (N+1)/2;
+    end
 end
 
-xhalf = xout(  N/2+offset : end );
-uhalf = uwave( N/2+offset : end );
+if isfield(config, 'Dirichlet') && strcmp(config.Dirichlet,'true')
+    uwave = [0 ; uwave; 0];
+end
+
+xhalf = xout(  center : end );
+uhalf = uwave( center : end );
 
 % find the spatial eigenvalues
 if shallow
@@ -110,6 +121,8 @@ Duhalf  = FD*uscaled./uscaled - decay;
 % interpolate derivative on finer grid to find zeros
 Nfine       = 10001;
 xfine       = linspace(0,L,Nfine)';
+
+% linear interpolation
 Duhalf_fine = interp1(xhalf,Duhalf,xfine);
 Duhalf_fine(isnan(Duhalf_fine)) = 0;
 
@@ -120,12 +133,18 @@ numMinMax = 3;                      % how many min/max we want
 zDer      = zDer(2*(1:numMinMax));  % take every other one, starting at second 
 zDer_x    = xfine(zDer);            % x values of deriative
 
+% if we use Chebyshev, interpolate onto a uniform grid
+if strcmp(config.method,'Chebyshev')
+    x_uniform = linspace(-L, L, N)';
+    uout = [interp1(xout, uwave, x_uniform) ; par.c];
+end
+
 % % which min/max we want
 % minmax = 1;
 % % x value for join
 % join_x = zDer_x(minmax);
 
-% another way to do this, using known spacing
+% better way to do this, using known spacing
 start = 1;
 index = 3;
 join_x = zDer_x(start) + (index - 1)*(spacing/2);
@@ -141,12 +160,25 @@ join_x = zDer_x(start) + (index - 1)*(spacing/2);
 join_pt = round(join_x / h)+1;
 
 % right half-wave
-center_pt  = N/2 + 1; 
-ud_half    = uout( join_pt : center_pt + join_pt - 1 );
+ud_half    = uout( join_pt : center + join_pt - 1 );
 ud_right   = flip( ud_half(1:end-1) );
 % for periodic BCs, remove the final point
-ud_right   = ud_right(1:end-1);
+if strcmp(config.BC, 'periodic')
+    ud_right   = ud_right(1:end-1);
+end
 ud         = [ ud_half ; ud_right; par.c ];
+
+% if we use Chebyshev, interpolate back onto Chebyshev grid
+if strcmp(config.method,'Chebyshev')
+    ud = [interp1(x_uniform, ud(1:end-1), xout) ; par.c];
+    % flip back around 
+    xout = flip(xout);
+    ud = [ flip(ud(1:end-1)) ; par.c ];
+end
+
+if isfield(config, 'Dirichlet') && strcmp(config.Dirichlet,'true')
+    ud = [ ud(2:end-2) ; par.c];
+end
 
 % run joined pulse through Newton solver
 % Newton solver on right half wave
@@ -156,7 +188,12 @@ iter = 10000;
 % plot double wave before and after Newton solver
 figure;
 % plot the half wave
-plot(xout, ud(1:end-1), xout, ud_out(1:end-1));
+
+if isfield(config, 'Dirichlet') && strcmp(config.Dirichlet,'true')
+    plot(xout, [0 ; ud(1:end-1); 0], xout, [0 ; ud_out(1:end-1); 0]);
+else
+    plot(xout, ud(1:end-1), xout, ud_out(1:end-1));
+end
 legend('initial guess','Newton solver output');
 title('double pulse');
 

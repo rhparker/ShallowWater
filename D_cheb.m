@@ -26,6 +26,12 @@ if strcmp(config.BC, 'Neumann')
     D(N,:)  = zeros(1, N);
     D2(1,:) = zeros(1, N);
     D2(N,:) = zeros(1, N);
+    D3(1,:) = zeros(1, N);
+    D3(N,:) = zeros(1, N);
+    D4(1,:) = zeros(1, N);
+    D4(N,:) = zeros(1, N);
+    D5(1,:) = zeros(1, N);
+    D5(N,:) = zeros(1, N);
 end
 
 end

@@ -17,7 +17,7 @@ end
 % extract wave data, N, and L 
 u     = uold(1:end-1);
 N_old = length(xold);
-L_old = -xold(1);
+L_old = abs( xold(1) );
 
 % if N is different from size of grid xold, 
 % or L is different from domain of xold,
@@ -25,8 +25,13 @@ L_old = -xold(1);
 if (N ~= N_old) || (L ~= L_old)
     % if we have a nonperiodic domain, i.e. [-L, L]
     if xold(1) + xold(end) == 0
-        % xout = linspace(xold(1), xold(end),N)';
-        xout = linspace(-L, L, N)';
+        if strcmp(config.method,'Chebyshev')
+            xout = L*chebdif(N, 1);
+        else
+            % xout = linspace(xold(1), xold(end),N)';
+            xout = linspace(-L, L, N)';
+        end
+    % for periodic domain, have to remove final point
     else
         % xout = linspace(xold(1),-xold(1),N+1)';
         xout = linspace(-L, L, N+1)';
