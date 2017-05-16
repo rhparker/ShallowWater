@@ -5,7 +5,7 @@
 % load ucKdV_Fourier_256;
 % load ucKdV_Fourier_128;
 % load ucKdV_fdiff_501;
-load ucKdV_Cheb_257;
+load ucKdV_Cheb_256;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
@@ -27,23 +27,15 @@ shallow = strcmp(config.equation,'shallow');
 % index = 42;        % KdV_Fourier_256, c = 1.0056
 % index = 400;       % KdV_Fourier_256, c = 9.4812
 
-% index = 324;         % KdV_Cheb_256, c = 9.4844
-index = 200;
+index = 325;         % KdV_Cheb_256, c = 9.4980
 
 % wave data and speed c
 uout  = uc(:, index);
 par.c = uc(end,index);
 xout  = x;
 
-% chebychev points listed backwards, so flip around 
-% for double pulse construction
-if strcmp(config.method,'Chebyshev')
-    xout = flip(xout);
-    uout = [ flip(uout(1:end-1)) ; par.c ];
-end
-
-L = -xout(1);                 % domain size
-N = length(xout);             % number of grid points
+L = ceil(abs(xout(1)));         % domain size
+N = length(xout);               % number of grid points
 h = (2*L)/N;
 uwave = uout(1:end-1);
 
@@ -60,14 +52,23 @@ uout(end) = par.c;
 % h=2*L/N;
 
 config.symmetry = 'L2squaredflip';
+config.form = 'integrated';
 % config.symmetry = 'none';
 
 % if we change anything, need to send through fsolve again
 [xout, uout] = fsolveequation(x, uout, par, N, L, config);
-uwave = uout(1:end-1);
-h = (2*L)/N;
 
 findsymm(xout, uout, config);
+
+% chebychev points listed backwards, so flip around 
+% for double pulse construction
+if strcmp(config.method,'Chebyshev')
+    xout = flip(xout);
+    uout = [ flip(uout(1:end-1)) ; par.c ];
+end
+
+uwave = uout(1:end-1);
+h = (2*L)/N;
 
 %% make half-wave from full wave
 
@@ -81,10 +82,6 @@ else
     else
         center = (N+1)/2;
     end
-end
-
-if isfield(config, 'Dirichlet') && strcmp(config.Dirichlet,'true')
-    uwave = [0 ; uwave; 0];
 end
 
 xhalf = xout(  center : end );
@@ -129,7 +126,7 @@ Duhalf_fine(isnan(Duhalf_fine)) = 0;
 % zero derivative is where we have a sign change
 zDer = find(diff(sign(Duhalf_fine)));
 % but derivative is discontinuous, so we only only want every other one
-numMinMax = 3;                      % how many min/max we want
+numMinMax = 2;                      % how many min/max we want
 zDer      = zDer(2*(1:numMinMax));  % take every other one, starting at second 
 zDer_x    = xfine(zDer);            % x values of deriative
 
@@ -157,15 +154,17 @@ join_x = zDer_x(start) + (index - 1)*(spacing/2);
 % join_x = join_x / 2;
 
 % where to join the waves
-join_pt = round(join_x / h)+1;
+join_pt = round(join_x / h) +1;
 
 % right half-wave
 ud_half    = uout( join_pt : center + join_pt - 1 );
 ud_right   = flip( ud_half(1:end-1) );
+
 % for periodic BCs, remove the final point
 if strcmp(config.BC, 'periodic')
     ud_right   = ud_right(1:end-1);
 end
+
 ud         = [ ud_half ; ud_right; par.c ];
 
 % if we use Chebyshev, interpolate back onto Chebyshev grid
@@ -176,24 +175,15 @@ if strcmp(config.method,'Chebyshev')
     ud = [ flip(ud(1:end-1)) ; par.c ];
 end
 
-if isfield(config, 'Dirichlet') && strcmp(config.Dirichlet,'true')
-    ud = [ ud(2:end-2) ; par.c];
-end
-
 % run joined pulse through Newton solver
 % Newton solver on right half wave
-iter = 10000;
+iter = 50000;
 [~, ud_out] = fsolveequation(xout, ud, par, N, L, config, iter);
 
 % plot double wave before and after Newton solver
 figure;
-% plot the half wave
+plot(xout, ud(1:end-1), xout, ud_out(1:end-1));
 
-if isfield(config, 'Dirichlet') && strcmp(config.Dirichlet,'true')
-    plot(xout, [0 ; ud(1:end-1); 0], xout, [0 ; ud_out(1:end-1); 0]);
-else
-    plot(xout, ud(1:end-1), xout, ud_out(1:end-1));
-end
 legend('initial guess','Newton solver output');
 title('double pulse');
 

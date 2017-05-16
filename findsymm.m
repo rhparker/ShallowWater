@@ -16,7 +16,7 @@ uorig = [uorig; c_start];
 
 % paramaters
 N = length(xout);
-L = -xout(1);
+L = ceil(abs(xout(1)));
 h = 2*L / (N-1);
 
 if strcmp(config.method,'Fourier')
@@ -24,7 +24,7 @@ if strcmp(config.method,'Fourier')
     usum = uout(2:end-1);
     uwave = uout(1:end-1);
 elseif strcmp(config.method,'Chebyshev')
-    [D, D2, D3, D4, D5] = D_cheb(N, L, config);
+    [D, D2, D3, D4, D5] = D_cheb(N+2, L, config);
     usum = uout(1:end-1);
     uwave = uout(1:end-1);
 elseif strcmp(config.method,'fdiff')

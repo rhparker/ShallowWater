@@ -9,20 +9,19 @@ config.equation = 'KdV';
 % config.BC       = 'periodic';
 config.BC        = 'Neumann';
 
-config.Dirichlet = 'true';
-% config.Dirichlet = 'false';
-
-
 % which numerical method to use
 % Fourier only works with periodic BCs
 % config.method   = 'Fourier';
 % config.method   = 'fdiff';
 config.method    = 'Chebyshev';
 
+config.form = 'integrated';
+% config.form = 'nonintegrated';
+
 % enforce symmetry
-config.symmetry = 'L2squaredflip';
+% config.symmetry = 'L2squaredflip';
 % config.symmetry = 'compare';
-% config.symmetry = 'none';
+config.symmetry = 'none';
 
 % true-false parameters, for convenience
 shallow = strcmp(config.equation,'shallow');
@@ -42,13 +41,14 @@ else
     L = 25;
 %     N = 501;              % finite difference
 %     N = 257;                % Fourier (will remove last point)
-%     N = 257;                % Chebyshev
-    N = 401;
+    N = 257;                % Chebyshev
 end
 
 % domain
 if strcmp(config.method,'Chebyshev')
-    x = L*chebdif(N,1);
+    % nothing extra here for now
+    % since we generate the Chebyshev grid when
+    % we compute the diff matrices
 else
     x = linspace(-L,L,N)';                    
     h = 2*L / (N-1);
@@ -67,7 +67,9 @@ if strcmp(config.method,'Fourier')
     % use Fourier spectral methods
     [D, D2, D3, D4, D5] = D_fourier(N, L);
 elseif strcmp(config.method,'Chebyshev')
-    [D, D2, D3, D4, D5] = D_cheb(N, L, config);
+    % Chebychev spectral methods
+    % homogeneous BCs; generate x grid here too
+    [D, D2, D3, D4, D5, x] = D_cheb(N, L, config);
 else
     % finite difference method
     [D, D2, D3, D4, D5] = D_fdiff(N, h, config.BC);
@@ -91,10 +93,6 @@ else
     % we only have solution for one value of c, so we start there
     par.c = 36/169;
     u = (105/338)*sech( x / (2 * sqrt(13) ) ).^4;
-end
-
-if strcmp(config.Dirichlet, 'true')
-    u = u(2:end-1);
 end
 
 % can use this as input for Newton solver
@@ -135,7 +133,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 10;
+iterations = 750;
 
 % continuation parameters
 contPar.numContSteps    = iterations;
@@ -156,11 +154,15 @@ u0 = u;
 %% find two initial points on the bifurcation curve
 
 % first point
-options = optimset('Display','iter','Algorithm','levenberg-marquardt','MaxIter',30,'Jacobian','on');
+options = optimset('Display','iter','Algorithm','levenberg-marquardt','MaxIter',500,'Jacobian','on');
 options.TolFun = 1e-16;
 options.TolX = 1e-16;
 
-[u1,fval,exitflag,output,jacobian1]  = fsolve( @(u) integratedequation(x,u,par,N,config,D,D2,D3,D4,D5,u0),u0,options);
+if isfield(config, 'form') && strcmp(config.form, 'nonintegrated')
+    [u1,fval,exitflag,output,jacobian1]  = fsolve( @(u) equation(x,u,par,N,config,D,D2,D3,D4,D5),u0,options);
+else
+    [u1,fval,exitflag,output,jacobian1]  = fsolve( @(u) integratedequation(x,u,par,N,config,D,D2,D3,D4,D5),u0,options);
+end
 
 v0 = [u1; getfield(par,contPar.Name)];  % v0 is the first point with parameter name
 
@@ -170,7 +172,12 @@ contdata  = v0;
 
 % second point
 par = setfield(par,contPar.Name,getfield(par,contPar.Name)+contPar.initial_ds); % increase par by ds
-[u2,fval,exitflag,output,jacobian1]  = fsolve(@(u) integratedequation(x,u,par,N,config,D,D2,D3,D4,D5,u1),u1,options);
+
+if isfield(config, 'form') && strcmp(config.form, 'nonintegrated')
+    [u2,fval,exitflag,output,jacobian1]  = fsolve(@(u) equation(x,u,par,N,config,D,D2,D3,D4,D5),u1,options);
+else
+    [u2,fval,exitflag,output,jacobian1]  = fsolve(@(u) integratedequation(x,u,par,N,config,D,D2,D3,D4,D5),u1,options);
+end
 
 v1 = [u2; getfield(par,contPar.Name)]; % v1 is the second point with parameter name
 
@@ -188,7 +195,12 @@ for index = 1:contPar.numContSteps
   
   disp(['Predictor = ',num2str(v(end))]);
   % Call fsolve predictor/corrector function
-  [v,res,exitflag,output,jacobian2] = fsolve(@(v) FixedPointSecantPredictorCorrector(x,v,v1,v0,@integratedequation,N,config,D,D2,D3,D4,D5,par,contPar,v1(1:end-1)),v,options); 
+  
+  if isfield(config, 'form') && strcmp(config.form, 'nonintegrated')
+    [v,res,exitflag,output,jacobian2] = fsolve(@(v) FixedPointSecantPredictorCorrector(x,v,v1,v0,@equation,N,config,D,D2,D3,D4,D5,par,contPar,v1(1:end-1)),v,options); 
+  else
+    [v,res,exitflag,output,jacobian2] = fsolve(@(v) FixedPointSecantPredictorCorrector(x,v,v1,v0,@integratedequation,N,config,D,D2,D3,D4,D5,par,contPar,v1(1:end-1)),v,options); 
+  end
   
   disp(['Step = ',int2str(index),' Parameter = ',num2str(v(end)), ' Norm(residual,inf) = ',num2str(norm(res,inf))]);
   % Update output parameters

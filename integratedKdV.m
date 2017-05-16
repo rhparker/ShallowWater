@@ -6,7 +6,7 @@ function [F,J] = integratedKdV(x,u,par,config,D,D2,D3,D4,D5,usymm)
 %% operator
 
 N = length(x);
-L = -x(1);
+L = ceil(abs(x(1)));
 h = 2*L/N;
 
 % 5th order KDV, integrated once

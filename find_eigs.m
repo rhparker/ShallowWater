@@ -6,29 +6,21 @@
 % load 5single;
 
 % load Sh4double1a; par.b=b;
-load temp;
 % load 5double1;
 uout = ud_out;
 % load 6single;
 % load 0singlefourier;
 % load 0singleneumann; 
 
-load ucKdV_Cheb_257_Dirichlet;
+load ucKdV_Cheb_256;
 xout = x;
-uout = uc(:,5);
-
-% need square matrix for eigenvalues, so can't enforce
-% Dirichlet BCs here
-if isfield(config, 'Dirichlet') && strcmp(config.Dirichlet, 'true')
-    uout = [0 ; uout(1:end-1) ; 0 ; uout(end) ];
-    config.Dirichlet = false;
-end
+uout = uc(:,400);
 
 % default parameters
 par.c = uout(end);              % wave speed
 N = length(xout);               % current grid size
-L = -xout(1);                   % current domain length;
-h = 2*L/N;                      % current grid spacingn n b
+L = ceil(abs(xout(1)));         % current domain length;
+h = 2*L/N;                      % current grid spacing
 
 % % if we want, we can change paramaters
 
@@ -48,12 +40,17 @@ h = 2*L/N;                      % current grid spacingn n b
 % % change speed c (to standardize between methods)
 % par.c = 82.5;
 
+config.form = 'integrated';
 
 % if we change stuff, run through Newton solver
 if N ~= length(xout) || L ~= -xout(1) || par.c ~= uout(end)
     % interpolate onto a larger grid, or with a longer domain, or with
     % different c
-    [xnew, unew] = fsolveequation(xout, uout, par, N, L, config, 10000);
+    if strcmp(config.method,'Chebyshev')
+        [xnew, unew] = fsolveequation(xout, uout, par, N+2, L, config, 10000);
+    else
+        [xnew, unew] = fsolveequation(xout, uout, par, N, L, config, 10000);
+    end
 else
     % if we don't interpolate
     xnew = xout; unew = uout;
@@ -64,7 +61,10 @@ end
 if strcmp(config.method,'Fourier')
     [D, D2, D3, D4, D5] = D_fourier(N, L);
 elseif strcmp(config.method,'Chebyshev')
-    [D, D2, D3, D4, D5] = D_cheb(N, L, config);
+    % for Chebshev methods we use Dirichlet BCs so 
+    % we need to increase N by 2 to account for the
+    % two boundary points
+    [D, D2, D3, D4, D5] = D_cheb(N+2, L, config);
 else
     % grid spacing
     h = 2*L/N;
@@ -85,7 +85,12 @@ end
 
 % just the wave
 uwave = unew(1:end-1);
-[F,J] = equation(uwave,par,N,config,D,D2,D3,D4,D5);
+
+% need configuration without symmetry to find eigenvalues
+config_nosymm = config;
+config_nosymm.symmetry = 'none';
+
+% [F,J] = equation(uwave,par,N,config,D,D2,D3,D4,D5);
 
 % % fsolve with nonintegrated equation (5th order)
 % options = optimset('Display','iter','Algorithm','levenberg-marquardt','MaxIter',30,'Jacobian','on');
@@ -126,21 +131,21 @@ uwave = unew(1:end-1);
 % % and that derivative is eigenvector of J with eigenvalue 0
 %
 
-% [F,J] = equation(uavg(1:end-1),par,N,config,D,D2,D3,D4,D5);
-% plot(xnew, F);
+[F,J] = equation(xnew, uwave,par,N,config,D,D2,D3,D4,D5);
+plot(xnew, F(1:end-1));
 
-% [F,J] = integratedequation(uwave,par,N,config,D,D2,D3,D4,D5);
-% plot(xnew, F)
+% [F,J] = integratedequation(xnew,uwave,par,N,config,D,D2,D3,D4,D5);
+% plot(xnew, F(1:end-1))
+
 % plot(xnew, J*D*uwave)
 
 % % check eigenvalues of integrated equation
 % num = 50;
 % center = -100;
 % [int_lambda, ~, ~] = eigs_linear(xout, uwave, par, config, num, center, 'integrated');
-% config_nosymm = config;
-% config_nosymm.symmetry = 'none';
-% [int_lambda, ~, ~] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
-% plot(int_lambda, zeros(length(int_lambda)), '.');
+
+[int_lambda, ~, ~] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
+plot(int_lambda, zeros(length(int_lambda)), '.');
 
 
 %% eigenvalues
@@ -158,7 +163,7 @@ a = 0;
 lambda_const = -a^5 + a^3 - par.c * a;
 
 % % use eig
-[lambda, V, J] = eig_linear(xnew, uwave, par, config, 'nonintegrated', a);
+[lambda, V, J] = eig_linear(xnew, uwave, par, config_nosymm, 'nonintegrated', a);
 
 % use eigs
 % num    = 5;
@@ -204,8 +209,8 @@ else
     integ = trapz(xnew,eVecs);
 end
 
-% imag_eval = false;
-imag_eval = true;
+imag_eval = false;
+% imag_eval = true;
 
 if imag_eval
     % % grab the eigenvalue nearest the one we found from the 

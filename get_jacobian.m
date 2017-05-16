@@ -28,6 +28,6 @@ function J = get_jacobian(x, u, par, config, version, exp_wt)
     if integrated
         [~,J] = integratedequation(x,u,par,N,config,D,D2,D3,D4,D5);
     else
-        [~,J] = equation(u,par,N,config,D,D2,D3,D4,D5,exp_wt); 
+        [~,J] = equation(x,u,par,N,config,D,D2,D3,D4,D5,exp_wt); 
     end
 end
