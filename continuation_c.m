@@ -19,9 +19,9 @@ config.form = 'integrated';
 % config.form = 'nonintegrated';
 
 % enforce symmetry
-% config.symmetry = 'L2squaredflip';
+config.symmetry = 'L2squaredflip';
 % config.symmetry = 'compare';
-config.symmetry = 'none';
+% config.symmetry = 'none';
 
 % true-false parameters, for convenience
 shallow = strcmp(config.equation,'shallow');
@@ -133,7 +133,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 50;
+iterations = 400;
 
 % continuation parameters
 contPar.numContSteps    = iterations;

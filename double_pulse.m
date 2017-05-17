@@ -5,7 +5,7 @@
 % load ucKdV_Fourier_256;
 % load ucKdV_Fourier_128;
 % load ucKdV_fdiff_501;
-load ucKdV_Cheb_256;
+load ucKdV_Cheb_256_symm;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
@@ -154,7 +154,7 @@ join_x = zDer_x(start) + (index - 1)*(spacing/2);
 % join_x = join_x / 2;
 
 % where to join the waves
-join_pt = round(join_x / h) +1;
+join_pt = round(join_x / h) + 1;
 
 % right half-wave
 ud_half    = uout( join_pt : center + join_pt - 1 );
