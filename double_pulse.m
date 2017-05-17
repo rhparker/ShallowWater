@@ -147,7 +147,7 @@ end
 
 % better way to do this, using known spacing
 start = 1;
-index = 2;
+index = 3;
 join_x = zDer_x(start) + (index - 1)*(spacing/2);
 
 % add this line to find half-way waves
@@ -181,7 +181,7 @@ end
 
 % run joined pulse through Newton solver
 % Newton solver on right half wave
-iter = 50000;
+iter = 100000;
 [~, ud_out] = fsolveequation(xout, ud, par, N, L, config, iter);
 
 % plot double wave before and after Newton solver
