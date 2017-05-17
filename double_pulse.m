@@ -143,7 +143,7 @@ end
 
 % better way to do this, using known spacing
 start = 1;
-index = 3;
+index = 2;
 join_x = zDer_x(start) + (index - 1)*(spacing/2);
 
 % add this line to find half-way waves
