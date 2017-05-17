@@ -14,13 +14,26 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, options)
     end
 
     % default parameters
-    par.c = u(end);                 % wave speed
-    N = length(x);                  % current grid size
-    L = -x(1);                      % current domain length;
-    h = 2*L/N;                      % current grid spacingn n b
+    par.c = u(end);                         % wave speed
+    N_initial = length(x);                  % current grid size
+    L_initial = ceil(abs(x(1)));            % current domain length;
+    
+    N = N_initial;
+    L = L_initial;
+    h = 2*L/N;  
+    
+    % current grid spacing
+    if strcmp(config.method,'Chebyshev')
+        N = N + 2;
+        N_initial = N_initial + 2;
+        % need third Neumann BC on R
+        config.form = 'nonintegrated';
+    end
+    
+    % if we like, we can change stuff here
     
     % if we change stuff, run through Newton solver
-    if N ~= length(x) || L ~= -x(1) || par.c ~= u(end)
+    if N ~= N_initial || L ~= L_initial || par.c ~= u(end)
         % interpolate onto a larger grid, or with a longer domain, or with
         % different c
         [xnew, unew] = fsolveequation(x, u, par, N, L, config, 10000);
@@ -32,9 +45,11 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, options)
     uwave = unew(1:end-1);
     
     % compute differentiation matrices
-    Fourier = strcmp(config.method,'Fourier');
-    if Fourier
+    if strcmp(config.method,'Fourier');
         [D, D2, D3, D4, D5] = D_fourier(N, L);
+    elseif strcmp(config.method,'Chebyshev');
+        [D, D2, D3, D4, D5] = D_cheb(N, L, config);
+    % finite differences
     else
         % grid spacing
         h = 2*L/N;
@@ -84,8 +99,8 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, options)
     LN = D5 - D3 + c*D;                 % linear part of spatial operator
 
     if IMEX
-        EB = inv(eye(N) - k*LN);            % implicit Euler operator
-        CN = inv(eye(N) - (k/2)*LN);        % implicit part of C-N operator
+        EB = inv(eye(length(xnew)) - k*LN);            % implicit Euler operator
+        CN = inv(eye(length(xnew)) - (k/2)*LN);        % implicit part of C-N operator
 
         % run one iterator of EB-EF so we can seed CN-AB
         u1 = uin;
@@ -123,7 +138,7 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, options)
             u2 = unew;
         elseif implicit
             uold = data(:,end);
-            unew = fsolve( @(u) u - uold - k/2*( KdV(u,par,N,D,D2,D3,D4,D5,0) + KdV(uold,par,N,D,D2,D3,D4,D5,0) ), uold);
+            unew = fsolve( @(u) u - uold - k/2*( KdV(xnew, u,par,config,D,D2,D3,D4,D5,0) + KdV(xnew,uold,par,config,D,D2,D3,D4,D5,0) ), uold);
         end
         
         % if we are saving our data

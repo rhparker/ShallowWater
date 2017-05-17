@@ -133,7 +133,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 750;
+iterations = 50;
 
 % continuation parameters
 contPar.numContSteps    = iterations;

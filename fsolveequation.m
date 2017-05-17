@@ -9,13 +9,14 @@ end
 % extract wave data, N, and L 
 u     = uold(1:end-1);
 N_old = length(xold);
-L_old = abs( xold(1) );
+L_old = ceil(abs(xold(1)));
 
 % differentiation matrices
 if strcmp(config.method,'Fourier')
     [D, D2, D3, D4, D5] = D_fourier(N, L);
 elseif strcmp(config.method,'Chebyshev')
-    [D, D2, D3, D4, D5, xout] = D_cheb(N+2, L, config);
+    N_old = N_old + 2;
+    [D, D2, D3, D4, D5, xout] = D_cheb(N, L, config);
 % finite differences
 else
     % grid spacing
