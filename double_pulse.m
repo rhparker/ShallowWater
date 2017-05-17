@@ -39,6 +39,10 @@ N = length(xout);               % number of grid points
 h = (2*L)/N;
 uwave = uout(1:end-1);
 
+if (strcmp(config.method, 'Chebyshev'))
+    N = N + 2;
+end
+
 % adjust c if we want (to standardize)
 % par.c = 1.0;
 % par.c = 9.4812;

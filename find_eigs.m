@@ -12,7 +12,7 @@
 % load 0singlefourier;
 % load 0singleneumann; 
 
-load 2double2_cheb;
+load 2double1_cheb;
 
 uout = ud_out;
 
@@ -240,7 +240,7 @@ else
 
     %     threshold = 0.001;
     
-        threshold = 0.01;
+        threshold = 0.001;
         % this finds both complex conjugates
         indices = find (abs( abs(imag(lambda)) - imag(target) ) < threshold);
 
