@@ -12,7 +12,7 @@
 % load 0singlefourier;
 % load 0singleneumann; 
 
-load 2double1_cheb;
+load 2double1a_cheb;
 
 uout = ud_out;
 
