@@ -12,6 +12,12 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, options)
     else
         save_steps = 1;
     end
+    
+    if isfield(options, 'speed')
+        speed = options.speed;
+    else
+        speed = 0;
+    end
 
     % default parameters
     par.c = u(end);                         % wave speed
@@ -91,7 +97,9 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, options)
     % if we modify c, wave no longer stationary solution
     % so translates one way or the other based on difference
     % from par.c; this is expected behavior
-    c = par.c;
+    
+    % we can add a modifier to this to keep pulse centered
+    c = par.c + speed;
     
     IMEX = true;
     implicit = false;

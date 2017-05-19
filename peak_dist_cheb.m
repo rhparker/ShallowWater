@@ -1,7 +1,8 @@
-function [dist, ht_diffs] = peak_dist_cheb(x, data)
+function [dist, ht_diffs, centers] = peak_dist_cheb(x, data)
 
     dist = [];
     ht_diffs = [];
+    centers = [];
     
     data_size = size(data);
     data_length = data_size(2);
@@ -36,6 +37,8 @@ function [dist, ht_diffs] = peak_dist_cheb(x, data)
         ht_diff = chebint(uout, zL) - chebint(uout, zR);
         ht_diffs = [ht_diffs ht_diff];
         
+        % center of double pulse is average of peak locations
+        centers = [centers (zL+zR)/2];
         
     end
 end

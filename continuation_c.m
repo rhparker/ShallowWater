@@ -133,7 +133,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 400;
+iterations = 1000;
 
 % continuation parameters
 contPar.numContSteps    = iterations;
@@ -143,8 +143,8 @@ if shallow
     contPar.ds          = 5;    % continuation step size: should always be positive!
     contPar.initial_ds  = 5;    % initial step: sign determines direction of continuation
 else
-    contPar.ds          = 1e-1;       % continuation step size: should always be positive!
-    contPar.initial_ds  = 1e-1;       % initial step: sign determines direction of continuation
+    contPar.ds          = 0.5e-1;       % continuation step size: should always be positive!
+    contPar.initial_ds  = 0.5e-1;       % initial step: sign determines direction of continuation
 end
 
 % system parameters

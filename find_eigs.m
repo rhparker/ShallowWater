@@ -12,9 +12,12 @@
 % load 0singlefourier;
 % load 0singleneumann; 
 
-load 2double1a_cheb;
+load 50F;
+index = 2;
 
-uout = ud_out;
+uout = ud_out(:,index);
+target = targets(index);
+threshold = 0.0001;
 
 % default parameters
 par.c = uout(end);              % wave speed
@@ -152,9 +155,9 @@ config_nosymm.symmetry = 'none';
 % center = -100;
 % [int_lambda, ~, ~] = eigs_linear(xout, uwave, par, config, num, center, 'integrated');
 
-[int_lambda, V_int, J_int] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
-pt_spec = find(int_lambda <= 1);
-plot(int_lambda(pt_spec), zeros(length(pt_spec)), '.', 'MarkerSize', 10);
+% [int_lambda, V_int, J_int] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
+% pt_spec = find(int_lambda <= 1);
+% plot(int_lambda(pt_spec), zeros(length(pt_spec)), '.', 'MarkerSize', 10);
 % plot(int_lambda, zeros(length(int_lambda)), '.');
 
 
@@ -182,8 +185,8 @@ config_nosymm.form = 'nonintegrated';
 % center = 0.0215i;
 % [lambda, V, J] = eigs_linear(xnew, uwave, par, config, num, center, 'nonintegrated', a);
 
-% eig_plot = false;
-eig_plot = true;
+eig_plot = false;
+% eig_plot = true;
 
 if eig_plot
     figure;
@@ -228,24 +231,12 @@ else
     else
         % % grab the eigenvalue nearest the one we found from the 
         % % weighted space
-        % target = 0.0215;
-    %     target = 0.6423;
-    %     target = 0.0149;     % 5double1a, N=256, c=4.4459
-    %     target = 0.0015;     % 2double2a, N=256, c=9.4812
-%         target = 0.0629;     % 2double1a, N=256, c=9.4812
-    %     target = 0.4596;   % 4double1a, N=256, c=32.6519
-    %     target = 0.2277;   % 3double1a, N=256, c=20.6361
-    %     target = 2.1633e-04; % 7double1a, N=256, c=1
-    %     target = 0.0502;     % 7double0, N=256, c=1
-
-    %     threshold = 0.001;
     
-        threshold = 0.001;
         % this finds both complex conjugates
         indices = find (abs( abs(imag(lambda)) - imag(target) ) < threshold);
 
-        % this just finds one with pos imag part
-        indices = find (abs( imag(lambda) - imag(target) ) < threshold);
+%         this just finds one with pos imag part
+%         indices = find (abs( imag(lambda) - imag(target) ) < threshold);
 
         eVals = lambda(indices);
         eVecs = V(:, indices);
@@ -254,12 +245,14 @@ else
     %     [vout, lout] = eig_solve(J, i*imag(eVals(index)), eVecs(:,index), 'imag');
     %     [vout, lout] = eig_solve(J, i*imag(eVals(index)), eVecs(:,index), 'fix_restrictnorm');
     %     max_after  = max( abs( J*vout - lout*vout));
+    
+        % want eigenvalue with positive imag part, for consistency
+        index = 1;
 
         % for now, we don't need to do that since we will
         % get rid of small real part when we fsolve for symmetry
-        vout = eVecs; 
+        vout = eVecs(:,index); 
         lout = 1i*imag(eVals);   % take imaginary part only
-        index = 1;
         
         if strcmp(config.BC, 'periodic')
             start = 2;
@@ -269,7 +262,7 @@ else
         max_before = max( abs( J*eVecs(:,index) - eVals(index)*eVecs(:,index)) );
         max_real_flipdiff_before = max( real(eVecs(start:end)) - flip(real(eVecs(start:end))) );
         max_imag_flipdiff_before = max( imag(eVecs(start:end)) + flip(imag(eVecs(start:end))) );
-        imag_diff_before = max( imag(eVecs) - (-1/imag(eVals))*J*real(eVecs));
+        imag_diff_before = max( imag(eVecs(:,index)) - (-1/imag(eVals(index)))*J*real(eVecs(:,index)));
 
     %     % start with averaged real part and construct symmetric eigenvector
     %     % average real(vout(x)) and real(vout(-x))
@@ -293,10 +286,10 @@ else
 
         % construct symmetric eigenvalue by rotation
         [v4,theta]   = rotate_evec(xnew, vout, config);
-        max_rotate   = max( abs( J*v4 - eVals*v4));
+        max_rotate   = max( abs( J*v4 - eVals(index)*v4));
         max_real_flipdiff = max( real(v4(start:end)) - flip(real(v4(start:end))) );
         max_imag_flipdiff = max( imag(v4(start:end)) + flip(imag(v4(start:end))) );
-        [v5_real, v5_imag, l5] = eig_solve_symm(J, eVals, xnew, real(v4), imag(v4), config);
+        [v5_real, v5_imag, l5] = eig_solve_symm(J, eVals(index), xnew, real(v4), imag(v4), config);
         v5 = v5_real + 1i * v5_imag;    
         max_rotate_fsolve   = max( abs( J*v5 - 1i*l5*v5));
         max_real_flipdiff_fsolve = max( real(v5(start:end)) - flip(real(v5(start:end))) );
