@@ -89,7 +89,11 @@ function [data, time, xnew] = runKdV_physical(x, u, config, iter, sep, options)
             ufine = interpft(uin, fine_points);
             stretch_pts = floor( sep / fine_spacing);
             ustretch = stretch_wave(ufine, stretch_pts);
-            um = interpft(ustretch, N);
+            if strcmp(config.method,'Chebyshev')
+                um = interpft(ustretch, N-2);
+            else
+                um = interpft(ustretch, N);
+            end
             uin = um;
         end 
     end
