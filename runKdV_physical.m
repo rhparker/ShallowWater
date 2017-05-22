@@ -175,24 +175,39 @@ end
 
 % stretches wave in center by duplicating center value
 function uout = stretch_wave(uin, spacing)
+    % center point is location of 0
     if mod(length(uin), 2) == 0
+        % even uin, assume periodic BCs
         center = length(uin)/2 + 1;
     else
+        % odd uin
         center = (length(uin) + 1)/2;
     end
+    
+    % if after we make room for spacing there are 
+    % an even number of points left
+    remaining_length = length(uin) - spacing - 1;
+    if mod( remaining_length, 2 ) == 0
+        left_length = remaining_length / 2;
+        right_length = left_length;
+    % otherwise there is an odd number of points left
+    else
+        left_length = (remaining_length + 1) / 2;
+        right_length = left_length - 1;
+    end
+    
     center_val = uin(center);
     center_spacer = center_val * ones(spacing + 1, 1);
-    left_piece = uin(1 + ceil(spacing/2):center - 1);
-    right_piece = flip(left_piece(1:end));
-%     if mod(spacing, 2) == 0
-%         right_piece = flip(left_piece(2:end));
-%     else 
-%         right_piece = flip(left_piece(1:end));
-%     end
+    left_piece = uin(center - left_length : center - 1);
+    right_piece = flip(left_piece);
+    right_piece = right_piece(1:right_length);
+%     left_piece = uin(1 + ceil(spacing/2):center - 1);
+%     right_piece = flip(left_piece(1:end));
+
     uout = [left_piece; center_spacer; right_piece ];
-    if length(uout) > length(uin)
-        uout = uout( 1: length(uin) );
-    end
+%     if length(uout) > length(uin)
+%         uout = uout( 1: length(uin) );
+%     end
 end
 
 function uout = compress_wave(uin, spacing)
