@@ -13,9 +13,12 @@
 % load 0singleneumann; 
 
 load 100F;
-index = 4;
+index = 2;
 
 uout = ud_out(:,index);
+
+% uout = um_1_4;
+
 target = targets(index);
 threshold = 0.0001;
 
@@ -259,6 +262,8 @@ else
         else
             start = 1;
         end
+        
+        % symmetry and max of eigenvalue problem before doing anything
         max_before = max( abs( J*eVecs(:,index) - eVals(index)*eVecs(:,index)) );
         max_real_flipdiff_before = max( real(eVecs(start:end)) - flip(real(eVecs(start:end))) );
         max_imag_flipdiff_before = max( imag(eVecs(start:end)) + flip(imag(eVecs(start:end))) );
@@ -283,89 +288,14 @@ else
     %     max_real_flipdiff = max( real(v3(2:end)) - flip(real(v3(2:end))) );
     %     max_imag_flipdiff = max( imag(v3(2:end)) + flip(imag(v3(2:end))) );
     %     imag_diff_symm   = max( imag(v3) - (-1/l3)*J*real(v3));
-
-        % construct symmetric eigenvalue by rotation
-        [v4,theta]   = rotate_evec(xnew, vout, config);
-        max_rotate   = max( abs( J*v4 - eVals(index)*v4));
-        max_real_flipdiff = max( real(v4(start:end)) - flip(real(v4(start:end))) );
-        max_imag_flipdiff = max( imag(v4(start:end)) + flip(imag(v4(start:end))) );
-        [v5_real, v5_imag, l5] = eig_solve_symm(J, eVals(index), xnew, real(v4), imag(v4), config);
-        v5 = v5_real + 1i * v5_imag;    
-        max_rotate_fsolve   = max( abs( J*v5 - 1i*l5*v5));
+    
+        % rotate and get rid of imaginary part
+    	[l5, v5] = eigen_symm(eVals(index), eVecs(:,index), xout, J, config);
+   
+        % symmetry and max info after
+        max_rotate_fsolve   = max( abs( J*v5 - l5*v5));
         max_real_flipdiff_fsolve = max( real(v5(start:end)) - flip(real(v5(start:end))) );
         max_imag_flipdiff_fsolve = max( imag(v5(start:end)) + flip(imag(v5(start:end))) );
     end
 end
-%% construct another eigenfunction
-% 
-% if imag_eval
-%     [vout2, lout2] = eig_solve(J, i*imag(eVals(index)), vavg, 'fix_restrictnorm');
-%     max_avg  = max( abs( J*vout2 - lout*vout2));    
-% end
 
-% % % check for symmetry
-% if strcmp(config.BC, 'periodic')
-%     eVecFlip = [ eVecs(1) ; flip(eVecs(2:end)) ];
-% %     voutflip = [ vout(1) ; flip(vout(2:end)) ];
-% end;
-% 
-% % plot(xnew, abs(eVecs) - abs(eVecFlip));
-% max_flip = max( abs( abs(eVecs) - abs(eVecFlip) ) );
-
-% % integrals
-% integout = trapz(xnew,vout);
-% integ = trapz(xnew,eVecs);
-
-% figure;
-% plot(xnew, exp(-a*xnew).*real(vout));
-% title('real part of unweighted eigenfunction, eigenvalue 0.1534i');
-% 
-% figure;
-% plot(xnew, exp(-a*xnew).*imag(vout));
-% title('imag part of unweighted eigenfunction, eigenvalue 0.1534i');
-% 
-% figure;
-% plot(xnew, imag(vout));
-% title('imag part of eigenfunction, a = 0, eigenvalue 0.0215i');
-% 
-% figure;
-% plot(xnew, real(vout));
-% title('real part of eigenfunction, a = 0, eigenvalue 0.0215i');
-
-
-% figure;
-% plot(lambda, '.');
-% plot_title   = ['Zoom of eigenvalues using eigs of double pulse 2, exp wt a = ',num2str(a)];
-% method_title = [config.method,', ',config.BC,' (N = ',num2str(N),', L = ',num2str(L),') '];
-% eig_title  = ['lambda = ',num2str(lambda(1))];
-% title({plot_title, [method_title, ' ']}); 
-% axis([-0.4 0.4 -3 3]);
-
-% title('weighted space eigs for single pulse, known solution, fdiff/Neumann')
-% axis([-0.002 0.003 -0.05 0.05]);
-
-% figure;
-% plot(lambda, '.');
-% title('weighted space eigs for single pulse, known solution, fdiff/Neumann')
-% axis([-0.001 0.001 -0.01 0.01]);
-
-% figure;
-% index = 3;
-% plot(xnew,V(:,index))
-% title(strcat('eigenfunction corresponding to eigenvalue:  ',num2str(lambda(index))))
-
-% % use for complex eigenfunctions
-% indices = 4:5;
-% lambdaV = lambda(indices);
-% legendcell = cellstr(num2str(lambdaV))
-% 
-% figure;
-% plot( xnew, real( V(:,indices)) );
-% legend(legendcell);
-% title('Real part of eigenfunctions')
-% 
-% figure;
-% plot( xnew, imag( V(:,indices)) );
-% legendcell = cellstr(num2str(lambdaV))
-% legend(legendcell);
-% title('Imaginary part of eigenfunctions')

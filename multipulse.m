@@ -8,7 +8,7 @@
 load 100F;
 
 % which double pulse do we want
-uout = ud_out_1;
+uout = ud_out_2;
 
 % how many pulses we want
 num_waves = 4;
