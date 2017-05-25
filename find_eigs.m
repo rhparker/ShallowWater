@@ -12,8 +12,8 @@
 % load 0singlefourier;
 % load 0singleneumann; 
 
-load 50F;
-index = 2;
+load 100F;
+index = 4;
 
 uout = ud_out(:,index);
 target = targets(index);
@@ -155,9 +155,9 @@ config_nosymm.symmetry = 'none';
 % center = -100;
 % [int_lambda, ~, ~] = eigs_linear(xout, uwave, par, config, num, center, 'integrated');
 
-% [int_lambda, V_int, J_int] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
-% pt_spec = find(int_lambda <= 1);
-% plot(int_lambda(pt_spec), zeros(length(pt_spec)), '.', 'MarkerSize', 10);
+[int_lambda, V_int, J_int] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
+pt_spec = int_lambda( find(int_lambda <= 1) );
+% plot(pt_spec, zeros(length(pt_spec)), '.', 'MarkerSize', 10);
 % plot(int_lambda, zeros(length(int_lambda)), '.');
 
 
@@ -169,7 +169,7 @@ config_nosymm.symmetry = 'none';
 % in terms of c
 a = find_exp_wt(par.c);
 % a = a / 2;
-% a = 0.2;
+% a = 0.1;
 a = 0;
 
 % eigenvalue of the constant solution for linearization about zero solution
