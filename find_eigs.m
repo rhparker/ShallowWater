@@ -17,7 +17,7 @@ index = 2;
 
 uout = ud_out(:,index);
 
-% uout = um_1_4;
+% uout = umc_2_4;
 
 target = targets(index);
 threshold = 0.0001;
@@ -41,8 +41,7 @@ N_old = length(xout);
 % % change domain size
 % L = 100;
 
-% L = 50;
-% N = 512;
+N = 400;
 
 % % change speed c (to standardize between methods)
 % par.c = 82.5;
@@ -158,8 +157,8 @@ config_nosymm.symmetry = 'none';
 % center = -100;
 % [int_lambda, ~, ~] = eigs_linear(xout, uwave, par, config, num, center, 'integrated');
 
-[int_lambda, V_int, J_int] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
-pt_spec = int_lambda( find(int_lambda <= 1) );
+% [int_lambda, V_int, J_int] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
+% pt_spec = int_lambda( find(int_lambda <= 1) );
 % plot(pt_spec, zeros(length(pt_spec)), '.', 'MarkerSize', 10);
 % plot(int_lambda, zeros(length(int_lambda)), '.');
 

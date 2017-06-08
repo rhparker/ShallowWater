@@ -6,14 +6,14 @@
 config.equation = 'KdV';
 
 % BCs to use
-% config.BC       = 'periodic';
-config.BC        = 'Neumann';
+config.BC       = 'periodic';
+% config.BC        = 'Neumann';
 
 % which numerical method to use
 % Fourier only works with periodic BCs
-% config.method   = 'Fourier';
+config.method   = 'Fourier';
 % config.method   = 'fdiff';
-config.method    = 'Chebyshev';
+% config.method    = 'Chebyshev';
 
 config.form = 'integrated';
 % config.form = 'nonintegrated';
@@ -39,9 +39,11 @@ else
 %     L = 100;
 %     L = 200;
     L = 25;
+    L = 200;
 %     N = 501;              % finite difference
 %     N = 257;                % Fourier (will remove last point)
     N = 257;                % Chebyshev
+    N = 513;
 end
 
 % domain
@@ -133,7 +135,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 1000;
+iterations = 750;
 
 % continuation parameters
 contPar.numContSteps    = iterations;
@@ -219,6 +221,8 @@ for index = 1:contPar.numContSteps
 end
 
 uc = contdata;
+
+save uc_out x uc config;
 
 
 

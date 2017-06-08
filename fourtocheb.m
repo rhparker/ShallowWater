@@ -16,5 +16,5 @@ function [x_cheb, u_cheb] = fourtocheb(x_four, u_four, config)
     [~, ~, ~, ~, ~, x_cheb] = D_cheb(N, L, config);
     uin = [spline(xin, uin, x_cheb); par.c];
     
-    [~, u_cheb] = fsolveequation(x_cheb, uin, par, N, L, config);
+    [~, u_cheb] = fsolveequation(x_cheb, uin, par, N, L, config, 1000);
 end

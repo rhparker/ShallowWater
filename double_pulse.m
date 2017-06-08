@@ -1,5 +1,7 @@
 %% generate double pulses
 
+function [x, u] = double_pulse(L_new)
+
 % load from continuation data
 
 % load ucKdV_Fourier_256;
@@ -8,21 +10,27 @@
 % index = 652;        % closest to 7.5
 % index = 844;        % closest to 10
 
-load ucKdV_Cheb_256;
+% load ucKdV_Cheb_256;
 % index = 189;        % closest to 2.5
 % index = 365;        % closest to 5
 % index = 528;        % closest to 7.5
-index = 684;        % closest to 10
+% index = 684;        % closest to 10
+
+% load ucKdV_Fourier_256_50;
+% index = 502;          % closest to 10
 
 % load 25C;
+% load 100F;
+
+load 100F_50;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
 
-% wave data and speed c
-uout  = uc(:, index);
-par.c = uc(end,index);
-xout  = x;
+% % wave data and speed c
+% uout  = uc(:, index);
+% par.c = uc(end,index);
+% xout  = x;
 
 par.c = uout(end);
 
@@ -35,16 +43,11 @@ if (strcmp(config.method, 'Chebyshev'))
     N = N + 2;
 end
 
-% adjust c if we want (to standardize)
- 
-par.c = 10;
-uout(end) = par.c;
+N = 512;
+% % adjust c if we want (to standardize)
 
-% adjust N or L if we want to
-
-% N = 1024;
-% L = 50;
-% h=2*L/N;
+% par.c = 10;
+% uout(end) = par.c;
 
 % symmetry_after = false;
 symmetry_after = true;
@@ -55,8 +58,15 @@ else
     config.symmetry = 'L2squaredflip';
 end
 
+% adjust N or L if we want to
+if exist('L_new','var')
+    L = L_new;
+end
+
+
 % if we change anything, need to send through fsolve again
-[xout, uout] = fsolveequation(x, uout, par, N, L, config);
+iter = 1000;
+[xout, uout] = fsolveequation(xout, uout, par, N, L, config, iter);
 uwave = uout(1:end-1);
 h = (2*L)/N;
 
@@ -146,7 +156,10 @@ zDer_x    = xfine(zDer);            % x values of deriative
 % better way to do this, using known spacing
 start = 1;
 index = 2;
-join_x = zDer_x(start) + (index - 1)*(spacing/2);
+
+join_start = zDer_x(start);
+
+join_x = join_start + (index - 1)*(spacing/2);
 
 % add this line to find half-way waves
 % join_x = (zDer_x(minmax) + zDer_x(minmax+1) )/ 2;
@@ -202,5 +215,10 @@ legend('initial guess','Newton solver output');
 title('double pulse');
 
 findsymm(xout, ud_out, config);
+
+x = xout;
+u = ud_out;
+
+end
 
 
