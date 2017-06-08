@@ -19,10 +19,15 @@ function [x, u] = double_pulse(L_new)
 % load ucKdV_Fourier_256_50;
 % index = 502;          % closest to 10
 
+% load ucKdV_Fourier_512_200;
+% index = 456;          % closest to 10
+
 % load 25C;
 % load 100F;
 
-load 100F_50;
+load 100F_200;
+xout = xout_1024;
+uout = uout_1024;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
@@ -43,14 +48,13 @@ if (strcmp(config.method, 'Chebyshev'))
     N = N + 2;
 end
 
-N = 512;
 % % adjust c if we want (to standardize)
 
 % par.c = 10;
 % uout(end) = par.c;
 
-% symmetry_after = false;
-symmetry_after = true;
+symmetry_after = false;
+% symmetry_after = true;
 
 if symmetry_after
     config.symmetry = 'none';
@@ -63,12 +67,11 @@ if exist('L_new','var')
     L = L_new;
 end
 
-
-% if we change anything, need to send through fsolve again
-iter = 1000;
-[xout, uout] = fsolveequation(xout, uout, par, N, L, config, iter);
-uwave = uout(1:end-1);
-h = (2*L)/N;
+% % if we change anything, need to send through fsolve again
+% iter = 1000;
+% [xout, uout] = fsolveequation(xout, uout, par, N, L, config, iter);
+% uwave = uout(1:end-1);
+% h = (2*L)/N;
 
 % chebychev points listed backwards, so flip around 
 % for double pulse construction

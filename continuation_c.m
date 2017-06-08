@@ -42,11 +42,9 @@ else
 %     L = 100;
 %     L = 200;
     L = 25;
-    L = 200;
 %     N = 501;              % finite difference
 %     N = 257;                % Fourier (will remove last point)
     N = 257;                % Chebyshev
-    N = 513;
 end
 
 % domain
@@ -103,6 +101,12 @@ end
 % can use this as input for Newton solver
 uin = [u; par.c];
 
+% alternately, we can start somewhere we have already been
+load ucKdV_Fourier_256;
+u = uc(1:end-1, end);
+par.c = uc(end,end);
+uin = [u ; par.c];
+
 %% some checks we can run
 
 % % check to see that our pulse (numerically) solves the eq
@@ -138,7 +142,7 @@ uin = [u; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 750;
+iterations = 10;
 
 % continuation parameters
 contPar.numContSteps    = iterations;
@@ -227,7 +231,7 @@ end
 
 uc = contdata;
 
-save uc_out x uc config;p
+save uc_out x uc config;
 
 
 
