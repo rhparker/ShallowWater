@@ -27,6 +27,9 @@ config.symmetry = 'L2squaredflip';
 shallow = strcmp(config.equation,'shallow');
 periodic = strcmp(config.BC,'periodic');
 
+% plot or not
+noplot = true;
+
 % domain bounds and size of grid
 % need more grid points for shallow water equation
 if shallow
@@ -211,9 +214,11 @@ for index = 1:contPar.numContSteps
   normu     = [normu norm(v(1:end-1))];
   contdata  = [contdata v];
 
-  plot(parameter,normu,'-o');   % plot the bifurcation diagram on the fly
-  xlabel(contPar.Name);
-  ylabel('Norm of the solution');drawnow;
+  if ~noplot
+      plot(parameter,normu,'-o');   % plot the bifurcation diagram on the fly
+      xlabel(contPar.Name);
+      ylabel('Norm of the solution');drawnow;
+  end
   
   % Prepare for the next continuation step
   v0 = v1;
@@ -222,7 +227,7 @@ end
 
 uc = contdata;
 
-save uc_out x uc config;
+save uc_out x uc config;p
 
 
 
