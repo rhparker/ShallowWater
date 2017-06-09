@@ -40,19 +40,19 @@ load 100F;
 
 ud_four = ud_out(1:end-1, :);
 x_four = xout;
-% figure('DefaultAxesFontSize',16);
-% plot(xout, ud_four);
-% ylabel('u(x)'); xlabel('x');
-% legend('2(2)', '2(3)', '2(4)', '2(5)');
+figure('DefaultAxesFontSize',16);
+plot(xout, ud_four);
+ylabel('u(x)'); xlabel('x');
+legend('2(1)', '2(2)', '2(3)', '2(4)', '2(5)');
 
 load 100C;
 
 ud_cheb = ud_out(1:end-1, :);
 x_cheb = xout;
-% figure('DefaultAxesFontSize',16);
-% plot(xout, ud_cheb);
-% ylabel('u(x)'); xlabel('x');
-% legend('2(2)', '2(3)', '2(4)', '2(5)');
+figure('DefaultAxesFontSize',16);
+plot(xout, ud_cheb);
+ylabel('u(x)'); xlabel('x');
+legend('2(1)', '2(2)', '2(3)', '2(4)', '2(5)');
 
 % do with L = 40
 load 100F_40;
@@ -187,6 +187,7 @@ axis([-0.2 0.2 -0.4 0.4]);
 % after finding in weighed space
 
 load 100F;
+% load 250F;
 
 % same y bound for both plots
 ybound = 2;
@@ -251,6 +252,26 @@ axis([-0.6 0.6 -1e6 1e6]);
 % figure('DefaultAxesFontSize',16);
 % plot(lambda1_quad, '.', 'MarkerSize', 10);
 % axis([-0.6 0.6 -1e6 1e6]);
+
+%% eigenvalues vs speed c
+
+speeds = [5 7.5 10 15 20 25]';
+logspeeds = log(speeds);
+lambda1 = [0.1363 0.2730 0.4352 0.8157 1.2535 1.7360]';
+lambda2 = [0.0190 0.0413 0.0691 0.1367 0.2168 0.3067]';
+
+figure('DefaultAxesFontSize',16);
+hold on;
+plot(log(speeds), [log(lambda1) log(lambda2)], '.', 'MarkerSize',10);
+bestfit1 = fit(logspeeds, log(lambda1), 'poly1');
+bestfit2 = fit(logspeeds, log(lambda2), 'poly1');
+plot(logspeeds, bestfit1(logspeeds));
+plot(logspeeds, bestfit2(logspeeds));
+xlabel('log of speed (log c)');
+ylabel('log of abs value of eigenvalue (log |lambda|)');
+slope1 = ['y = ' num2str(bestfit1.p1) ' x + ' num2str(bestfit1.p2) ];
+slope2 = ['y = ' num2str(bestfit2.p1) ' x + ' num2str(bestfit2.p2) ];
+legend('double pulse 2(2)', 'double pulse 2(3)', slope1, slope2, 'Location','northwest');
 
 %% integral of eigenfunctions
 
@@ -333,6 +354,7 @@ period = mean_gap * timestep;
 %% eigenvalue decay plots
 
 load 100F;
+marker_size = 15;
 c = uout(end);
 
 % roots of linearization about 0 solution
@@ -345,7 +367,7 @@ spacing = abs(imag(nu(1)));
 figure('DefaultAxesFontSize',16);
 % marker_size = 15;
 hold on;
-xplot = (pi / spacing)*[0 1 2 3]';
+xplot = (pi / spacing)*[0 1 2 3 4]';
 yplot = log(abs(int_evals));
 scatter(xplot, yplot, marker_size);
 % best fit line

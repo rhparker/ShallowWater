@@ -101,11 +101,11 @@ end
 % can use this as input for Newton solver
 uin = [u; par.c];
 
-% alternately, we can start somewhere we have already been
-load ucKdV_Fourier_256;
-u = uc(1:end-1, end);
-par.c = uc(end,end);
-uin = [u ; par.c];
+% % alternately, we can start somewhere we have already been
+% load ucKdV_Fourier_256;
+% u = uc(1:end-1, end);
+% par.c = uc(end,end);
+% uin = [u ; par.c];
 
 %% some checks we can run
 
@@ -142,7 +142,7 @@ uin = [u ; par.c];
 %% secant continuation code in parameter c
 
 % number of iterations
-iterations = 10;
+iterations = 12000;
 
 % continuation parameters
 contPar.numContSteps    = iterations;
@@ -227,10 +227,16 @@ for index = 1:contPar.numContSteps
   % Prepare for the next continuation step
   v0 = v1;
   v1 = v;
+  
+  % Save intermediate data so we don't lose it
+  if mod(index, 500) == 0
+      uc = contdata;
+    save uc_out x uc config;
+  end
 end
 
+% save data at end
 uc = contdata;
-
 save uc_out x uc config;
 
 

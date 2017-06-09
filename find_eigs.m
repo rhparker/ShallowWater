@@ -12,11 +12,18 @@
 % load 0singlefourier;
 % load 0singleneumann; 
 
-load 100F;
+load 250F;
+
 index = 2;
 
-uout = ud_out(:,index);
+% uout = ud_out(:,index+1);
+uout = ud_out_2;
 
+
+% uout = ud_out_0_768;
+% xout = xout_768;
+
+% uout = ud_out(:,index);
 % uout = umc_2_4;
 
 target = targets(index);
@@ -40,8 +47,6 @@ N_old = length(xout);
 
 % % change domain size
 % L = 100;
-
-N = 400;
 
 % % change speed c (to standardize between methods)
 % par.c = 82.5;
@@ -179,7 +184,7 @@ lambda_const = -a^5 + a^3 - par.c * a;
 
 % % use eig
 config_nosymm.form = 'nonintegrated';
-[lambda, V, J] = eig_linear(xnew, uwave, par, config_nosymm, 'nonintegrated', a);
+[lambda, V, J] = eig_linear(xnew, unew(1:end-1), par, config_nosymm, 'nonintegrated', a);
 
 % use eigs
 % num    = 5;

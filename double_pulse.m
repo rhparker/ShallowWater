@@ -10,6 +10,11 @@ function [x, u] = double_pulse(L_new)
 % index = 652;        % closest to 7.5
 % index = 844;        % closest to 10
 
+% load ucKdV_Fourier_256a;
+% index = 897;        % closest to 25
+% index = 557;        % closest to 20
+% index = 207;        % closest to 15
+
 % load ucKdV_Cheb_256;
 % index = 189;        % closest to 2.5
 % index = 365;        % closest to 5
@@ -23,11 +28,22 @@ function [x, u] = double_pulse(L_new)
 % index = 456;          % closest to 10
 
 % load 25C;
+
+% Fourier, speed 10
 % load 100F;
 
-load 100F_200;
-xout = xout_1024;
-uout = uout_1024;
+% Fourier, speed 25
+% load 250F;
+
+load 150F;
+
+% % N = 512
+% uout = uout_512;
+% xout = xout_512;
+
+% N = 768
+% uout = uout_768;
+% xout = xout_768;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
@@ -50,7 +66,7 @@ end
 
 % % adjust c if we want (to standardize)
 
-% par.c = 10;
+% par.c = 15;
 % uout(end) = par.c;
 
 symmetry_after = false;
@@ -67,11 +83,11 @@ if exist('L_new','var')
     L = L_new;
 end
 
-% % if we change anything, need to send through fsolve again
-% iter = 1000;
-% [xout, uout] = fsolveequation(xout, uout, par, N, L, config, iter);
-% uwave = uout(1:end-1);
-% h = (2*L)/N;
+% if we change anything, need to send through fsolve again
+iter = 1000;
+[xout, uout] = fsolveequation(xout, uout, par, N, L, config, iter);
+uwave = uout(1:end-1);
+h = (2*L)/N;
 
 % chebychev points listed backwards, so flip around 
 % for double pulse construction
@@ -211,11 +227,10 @@ if symmetry_after
 end
 
 % plot double wave before and after Newton solver
-figure;
+figure('DefaultAxesFontSize',16);
 plot(xout, ud(1:end-1), xout, ud_out(1:end-1));
 
-legend('initial guess','Newton solver output');
-title('double pulse');
+legend('Initial guess','Output of fsolve');
 
 findsymm(xout, ud_out, config);
 

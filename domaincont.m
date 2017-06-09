@@ -1,22 +1,21 @@
 % continuation code for domain size
 % actually does not use continuation code...
-
-load 100F_200;
-
-xout = xout_1024;
-uout = uout_1024;
-
 % parameters
+
+load 100F;
+
 L = ceil(abs(xout(1)));         % domain size
 N = length(xout);               % number of grid points
 h = (2*L)/N;
 par.c = uout(end);
 
-delta = -10;
-steps = 2;
+delta = 10;
+steps = 5;
 output_x = [];
 output_u = [];
 output_L = [];
+
+L = 125;
 
 for index = 1:steps
     [x, u] = double_pulse(L);
