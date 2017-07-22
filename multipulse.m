@@ -5,13 +5,13 @@
 
 % load pregenerated single/double pulse
 
-load 100F;
+load 100F_40;
 
 % which double pulse do we want
-uout = ud_out_2;
+uout = ud_out(:,2);
 
 % how many pulses we want
-num_waves = 4;
+num_waves = 5;
 
 % extract speed parameter
 par.c = uout(end);

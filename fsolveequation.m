@@ -44,16 +44,13 @@ if (N ~= N_old) || (L ~= L_old)
     end
     
     if strcmp(config.method,'Fourier')
-        % if only changing N can do fourier interpolation
-        if (L == L_old)
-            u = interpft(uold(1:end-1), N);
-        % otherwise cubic spline
-        else
-            u = spline(xold,uold(1:end-1),xout);
-        end
+        % cublic spline
+        u = spline(xold,uold(1:end-1),xout);
     else
         % linear interpolation
-        u = interp1(xold,uold(1:end-1),xout);
+        % u = interp1(xold,uold(1:end-1),xout);
+        % cubic spline
+        u = spline(xold,uold(1:end-1),xout);
         % will have some NaN values at the ends of u
         % replace these with 0
         u(isnan(u)) = 0;

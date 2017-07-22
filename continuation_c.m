@@ -195,49 +195,6 @@ normu     = [normu     norm(u2)];
 contdata  = [contdata  v1];
 
 
-%% Continuation code
-% At each continuation step
-for index = 1:contPar.numContSteps
-
-  % Predictor
-  v = v1 + (v1 - v0)/norm(v1 - v0, 2) * contPar.ds;
-  
-  disp(['Predictor = ',num2str(v(end))]);
-  % Call fsolve predictor/corrector function
-  
-  if isfield(config, 'form') && strcmp(config.form, 'nonintegrated')
-    [v,res,exitflag,output,jacobian2] = fsolve(@(v) FixedPointSecantPredictorCorrector(x,v,v1,v0,@equation,N,config,D,D2,D3,D4,D5,par,contPar,v1(1:end-1)),v,options); 
-  else
-    [v,res,exitflag,output,jacobian2] = fsolve(@(v) FixedPointSecantPredictorCorrector(x,v,v1,v0,@integratedequation,N,config,D,D2,D3,D4,D5,par,contPar,v1(1:end-1)),v,options); 
-  end
-  
-  disp(['Step = ',int2str(index),' Parameter = ',num2str(v(end)), ' Norm(residual,inf) = ',num2str(norm(res,inf))]);
-  % Update output parameters
-  parameter = [parameter v(end)];
-%  normu     = [normu norm(v(1:end-1))];
-  normu     = [normu norm(v(1:end-1))];
-  contdata  = [contdata v];
-
-  if ~noplot
-      plot(parameter,normu,'-o');   % plot the bifurcation diagram on the fly
-      xlabel(contPar.Name);
-      ylabel('Norm of the solution');drawnow;
-  end
-  
-  % Prepare for the next continuation step
-  v0 = v1;
-  v1 = v;
-  
-  % Save intermediate data so we don't lose it
-  if mod(index, 500) == 0
-      uc = contdata;
-    save uc_out x uc config;
-  end
-end
-
-% save data at end
-uc = contdata;
-save uc_out x uc config;
 
 
 

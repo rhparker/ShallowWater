@@ -12,15 +12,14 @@
 % load 0singlefourier;
 % load 0singleneumann; 
 
-load 250F;
+load 100F;
 
-index = 2;
+index = 1;
 
-% uout = ud_out(:,index+1);
-uout = ud_out_2;
+uout = ud_out(:,index+1);
+% uout = ud_out_2;
 
-
-% uout = ud_out_0_768;
+% uout = ud_out_768;
 % xout = xout_768;
 
 % uout = ud_out(:,index);
@@ -45,8 +44,10 @@ N_old = length(xout);
 % N = 4096;
 % N = 400;
 
+% N = 1024;
+
 % % change domain size
-% L = 100;
+% L = 130;
 
 % % change speed c (to standardize between methods)
 % par.c = 82.5;
@@ -60,7 +61,7 @@ if strcmp(config.method,'Chebyshev')
     N_old = N_old + 2;
 end
 
-% config.symmetry = 'none';
+config.symmetry = 'none';
 
 % if we change stuff, run through Newton solver
 if N ~= N_old || L ~= ceil(abs(xout(1))) || par.c ~= uout(end)
@@ -75,6 +76,10 @@ else
     % if we don't interpolate
     xnew = xout; unew = uout;
 end
+
+% now enforce symmetry
+config.symmetry = 'L2squaredflip';
+[xnew, unew] = fsolveequation(xnew, unew, par, N, L, config, 10000);
 
 % differentiation matrices
 
@@ -160,12 +165,26 @@ config_nosymm.symmetry = 'none';
 % % check eigenvalues of integrated equation
 % num = 50;
 % center = -100;
-% [int_lambda, ~, ~] = eigs_linear(xout, uwave, par, config, num, center, 'integrated');
+% [lambda_int, ~, ~] = eigs_linear(xout, uwave, par, config, num, center, 'integrated');
 
-% [int_lambda, V_int, J_int] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
-% pt_spec = int_lambda( find(int_lambda <= 1) );
+[lambda_int, V_int, J_int] = eig_linear(xnew, uwave, par, config_nosymm, 'integrated');
+pt_spec = lambda_int( find(lambda_int <= 1) );
+pt_spec_V = V_int( :, find(lambda_int <= 1) );
 % plot(pt_spec, zeros(length(pt_spec)), '.', 'MarkerSize', 10);
-% plot(int_lambda, zeros(length(int_lambda)), '.');
+% plot(lambda_int, zeros(length(lambda_int)), '.');
+
+figure;
+plot(xnew, pt_spec_V(:,1:2));
+legendCell = cellstr(num2str(pt_spec(1:2), 'lambda=%-d'))
+legend(legendCell);
+title({'Eigenfunctions of linearization of 4th order operator about double pulse 2(2)','Negative eigenvalues'});
+
+figure;
+plot(xnew, pt_spec_V(:,3:4));
+legendCell = cellstr(num2str(pt_spec(3:4), 'lambda=%-d'))
+legend(legendCell);
+title({'Eigenfunctions of linearization of 4th order operator about double pulse 2(2)','Eigenvalues near 0'});
+
 
 
 %% eigenvalues
@@ -294,7 +313,7 @@ else
     %     imag_diff_symm   = max( imag(v3) - (-1/l3)*J*real(v3));
     
         % rotate and get rid of imaginary part
-    	[l5, v5] = eigen_symm(eVals(index), eVecs(:,index), xout, J, config);
+    	[l5, v5] = eigen_symm(eVals(index), eVecs(:,index), xnew, J, config);
    
         % symmetry and max info after
         max_rotate_fsolve   = max( abs( J*v5 - l5*v5));

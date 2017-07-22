@@ -35,15 +35,11 @@ function [x, u] = double_pulse(L_new)
 % Fourier, speed 25
 % load 250F;
 
-load 150F;
+load 1500F_10;
 
-% % N = 512
-% uout = uout_512;
-% xout = xout_512;
-
-% N = 768
-% uout = uout_768;
-% xout = xout_768;
+% N = 1024
+uout = uout_1024;
+xout = xout_1024;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
@@ -65,12 +61,11 @@ if (strcmp(config.method, 'Chebyshev'))
 end
 
 % % adjust c if we want (to standardize)
+% uout.end = 15;
+% par.c = uout.end;
 
-% par.c = 15;
-% uout(end) = par.c;
-
-symmetry_after = false;
-% symmetry_after = true;
+% symmetry_after = false;
+symmetry_after = true;
 
 if symmetry_after
     config.symmetry = 'none';

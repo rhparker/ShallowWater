@@ -174,13 +174,13 @@ axis([-2 0.1 -3 3]);
 
 % pulse 3(3,3)
 figure('DefaultAxesFontSize',16);
-plot(lambda2_triple, '.', 'MarkerSize', 10);
-axis([-0.2 0.2 -0.4 0.4]);
+plot(lambda1_triple, '.', 'MarkerSize', 10);
+axis([-0.6 0.6 -1e6 1e6]);
 
 % pulse 3(3,3,3)
 figure('DefaultAxesFontSize',16);
-plot(lambda2_quad, '.', 'MarkerSize', 10);
-axis([-0.2 0.2 -0.4 0.4]);
+plot(lambda1_quad, '.', 'MarkerSize', 10);
+axis([-0.6 0.6 -1e6 1e6]);
 
 %% eigenvalue plots, Fourier
 % "fishing" out eigenvalues from essential spectrum
@@ -223,35 +223,35 @@ axis([-0.01 0.01 -ybound ybound]);
 load 100C;
 c = uout(end);
 
-% pulse 2(2), shows absolute spectrum
-figure('DefaultAxesFontSize',16);
-plot(lambda1, '.');
-axis([-1e4 0.6 -1e5 1e5]);
-
-% pulse 2(2), zoom on eigenvalues
-figure('DefaultAxesFontSize',16);
-plot(lambda1, '.', 'MarkerSize', 10);
-axis([-0.6 0.6 -1e6 1e6]);
-
-% % pulse 2(3)
+% % pulse 2(2), shows absolute spectrum
 % figure('DefaultAxesFontSize',16);
-% plot(lambda2, '.');
-% % axis([-1e-7 1e-7 -1e6 1e6]);
+% plot(lambda1, '.');
+% axis([-1e4 0.6 -1e5 1e5]);
 % 
-% % pulse 2(3), zoom on eigenvalues
+% % pulse 2(2), zoom on eigenvalues
 % figure('DefaultAxesFontSize',16);
-% plot(lambda2, '.', 'MarkerSize', 10);
+% plot(lambda1, '.', 'MarkerSize', 10);
 % axis([-0.6 0.6 -1e6 1e6]);
+
+% pulse 2(3)
+figure('DefaultAxesFontSize',16);
+plot(lambda2, '.');
+% axis([-1e-7 1e-7 -1e6 1e6]);
+
+% pulse 2(3), zoom on eigenvalues
+figure('DefaultAxesFontSize',16);
+plot(lambda2, '.', 'MarkerSize', 10);
+axis([-30 0.6 -5 5]);
 
 % % pulse 3(2,2)
 % figure('DefaultAxesFontSize',16);
-% plot(lambda1_triple, '.', 'MarkerSize', 10);
-% axis([-0.6 0.6 -1e6 1e6]);
+% plot(lambda2_triple, '.', 'MarkerSize', 10);
+% axis([-0.1 0.1 -0.2 0.2]);
 % 
 % % pulse 3(2,2,2)
 % figure('DefaultAxesFontSize',16);
-% plot(lambda1_quad, '.', 'MarkerSize', 10);
-% axis([-0.6 0.6 -1e6 1e6]);
+% plot(lambda2_quad, '.', 'MarkerSize', 10);
+% axis([-0.6 0.6 -0.2 0.2]);
 
 %% eigenvalues vs speed c
 
@@ -263,8 +263,7 @@ lambda2 = [0.0190 0.0413 0.0691 0.1367 0.2168 0.3067]';
 figure('DefaultAxesFontSize',16);
 hold on;
 plot(log(speeds), [log(lambda1) log(lambda2)], '.', 'MarkerSize',10);
-bestfit1 = fit(logspeeds, log(lambda1), 'poly1');
-bestfit2 = fit(logspeeds, log(lambda2), 'poly1');
+xbestfit2 = fit(logspeeds, log(lambda2), 'poly1');
 plot(logspeeds, bestfit1(logspeeds));
 plot(logspeeds, bestfit2(logspeeds));
 xlabel('log of speed (log c)');
@@ -272,6 +271,44 @@ ylabel('log of abs value of eigenvalue (log |lambda|)');
 slope1 = ['y = ' num2str(bestfit1.p1) ' x + ' num2str(bestfit1.p2) ];
 slope2 = ['y = ' num2str(bestfit2.p1) ' x + ' num2str(bestfit2.p2) ];
 legend('double pulse 2(2)', 'double pulse 2(3)', slope1, slope2, 'Location','northwest');
+
+
+%% decay rate alpha vs c
+
+cvals = linspace(1, 100, 100);
+alphavals = zeros(1, length(cvals));
+for index = 1:length(cvals);
+    nu = roots([1 0 -1 0 cvals(index)]);
+    alpha = abs(real(nu(1)));
+    alphavals(index) = alpha;
+end
+
+% figure('DefaultAxesFontSize',16);
+% plot(cvals, alphavals, '.');
+% xlabel('speed (c)');
+% ylabel('alpha');
+% 
+% 
+
+figure('DefaultAxesFontSize',16);
+logc = log(cvals);
+logalpha = log(alphavals);
+plot(logc, logalpha, '.');
+xlabel('log of speed (log c)');
+ylabel('log(alpha)');
+
+
+figure('DefaultAxesFontSize',16);
+hold on;
+xplot = logc( 30 : end);
+yplot = logalpha( 30 : end);
+plot(xplot, yplot, '.');
+bestfit = fit(xplot', yplot', 'poly1');
+plot(xplot, bestfit(xplot));
+xlabel('log of speed (log c)');
+ylabel('log(alpha)');
+slope = ['y = ' num2str(bestfit.p1) ' x + ' num2str(bestfit.p2) ];
+legend('log(alpha)', slope, 'Location','northwest');
 
 %% integral of eigenfunctions
 
