@@ -16,8 +16,8 @@ load 100F;
 
 index = 1;
 
-uout = ud_out(:,index+1);
-% uout = ud_out_2;
+% uout = ud_out(:,index+1);
+uout = ud_out_1;
 
 % uout = ud_out_768;
 % xout = xout_768;
@@ -173,17 +173,20 @@ pt_spec_V = V_int( :, find(lambda_int <= 1) );
 % plot(pt_spec, zeros(length(pt_spec)), '.', 'MarkerSize', 10);
 % plot(lambda_int, zeros(length(lambda_int)), '.');
 
-figure;
-plot(xnew, pt_spec_V(:,1:2));
-legendCell = cellstr(num2str(pt_spec(1:2), 'lambda=%-d'))
-legend(legendCell);
-title({'Eigenfunctions of linearization of 4th order operator about double pulse 2(2)','Negative eigenvalues'});
+% plot integrated eigenfunctions
 
-figure;
-plot(xnew, pt_spec_V(:,3:4));
-legendCell = cellstr(num2str(pt_spec(3:4), 'lambda=%-d'))
-legend(legendCell);
-title({'Eigenfunctions of linearization of 4th order operator about double pulse 2(2)','Eigenvalues near 0'});
+% figure;
+% plot(xnew, pt_spec_V(:,1:2));
+% legendCell = cellstr(num2str(pt_spec(1:2), 'lambda=%-d'))
+% legend(legendCell);
+% title({'Eigenfunctions of linearization of 4th order operator about double pulse 2(2)','Negative eigenvalues'});
+
+
+% figure;
+% plot(xnew, pt_spec_V(:,3:4));
+% legendCell = cellstr(num2str(pt_spec(3:4), 'lambda=%-d'))
+% legend(legendCell);
+% title({'Eigenfunctions of linearization of 4th order operator about double pulse 2(2)','Eigenvalues near 0'});
 
 
 

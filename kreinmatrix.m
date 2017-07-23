@@ -1,6 +1,6 @@
-% computes the Krein matrix, or at least tries to
+% computes the Krein matrix
 
-load 100F_double2;
+load 100F_double1;
 
 N = length(xout);
 
@@ -18,8 +18,9 @@ v2 = Du/norm(Du);
 % constant function, should be kernel of diff operator
 v3 = ones(N,1) / norm(ones(N,1));
 
-% turns out that D has two things in it, likely due to
-% something about fourier spectral differentiation
+% turns out that ker D has two things in it, likely due to
+% something about fourier spectral differentiation; in any
+% case will use that as kernel
 kerD = null(D);
 
 % easiest way to get a basis is to tack on standard
@@ -28,20 +29,21 @@ kerD = null(D);
 % an ON basis extending v1, etc 
 Id = eye(N);
 
-% this basis extends v2 = Du
-M1 = [v2 Id(:,1:end-1)];
-[M1, R] = qr(M1, 0);
-
-% this basis extends {v1, ker D}
-M2 = [v1 kerD Id(:,3:end-1)];
-[M2, R] = qr(M2, 0);
+% % this basis extends v2 = Du
+% M1 = [v2 Id(:,1:end-1)];
+% [M1, R] = qr(M1, 0);
+% 
+% % this basis extends {v1, ker D}
+% M2 = [v1 kerD Id(:,3:end-1)];
+% [M2, R] = qr(M2, 0);
 
 % this basis extends {v1, v2, Ker D}
 M = [v1 v2 kerD Id(:,4:end-1)];
-[M, R] = qr(M, 0);
+[M, ~] = qr(M, 0);
 
-% % projection matrix in M-coordinates
-% % projection gets rid of v1, v2, Ker D
+% projection matrix in M-coordinates
+% projection gets rid of v1, v2, Ker D
+% PM is proj matrix in M-coord, P in std coord
 PM = Id; 
 PM(:,1:4) = zeros(N, 4);
 P = M*PM*M';
@@ -49,65 +51,74 @@ P = M*PM*M';
 Hplus = J_int;
 Hminus = -D*J_int*D;
 
-% We want these to be invertible, so in theory we 
-% restrict to perpendicular space to kernel of Hplus/Hminus
-% then invert. Practically, this is annoying, so 
-% we can get rid of the kernel my modifying
-% Hminus to act as the identity on its kernel
+% now we define R and Sinverse, using the formulas
+%    R    = PM Hplus PM
+%    Sinv = PM Hminus PM
 
-% for now, we get rid of a 4-dim subspace
+R = P*Hplus*P;
+Sinv = P*Hminus*P;
 
-% do this to Hplus to get R
-Z = M'*Hplus*M;
+% we need to invert S, but only on the N-4 dimensional
+% subspace which doesn't contain its kernel
+
+Z = M'*Sinv*M;
+Z2 = inv( Z(5:end,5:end) );
+Z(5:end,5:end) = Z2;
+S = P*M*Z*M'*P;
+
+% another version of S, this time it acts as the identity on 
+% the 4-dimensional kernel of the projection P; this is
+% more convenient for finding negative eigenvalues
+% since we don't have any eigenvalues of zero; we checked
+% to make sure the negative eigenvalues are the same
+% as those of S.
+Z = M'*Sinv*M;
 Z(:,1:4) = Id(:,1:4);
-R = M*Z*M';
+Snonsingular = inv( M*Z*M' );
 
-% do this to Hminus to get SInv, invert to get S
-Z = M'*Hminus*M;
-Z(:,1:4) = Id(:,1:4);
-SInv = M*Z*M';
-S = inv(SInv);
-
-% eigenvalues and eigenfunctions of S
-[V, lambda] = eig(S);
+% eigenvalues and eigenfunctions of S (using Snonsingular)
+[V, lambda] = eig(Snonsingular);
 lambda = diag(lambda);
 % find negative eigenvalues and corresp eigenfunctions
 lNeg = lambda(find(lambda < 0));
 vNeg = V(:,find(lambda < 0));
+nNeg = length(lNeg);
+
+% plot the negative eigenfunctions
+figure;
+plot(xout, vNeg);
+title('Eigenfunctions corresponding to negative eigenvalues of the operator S');
+legendCell = cellstr(num2str(lNeg, 'nu=%-d'))
+legend(legendCell);
 
 % now we will need projection on orthogonal complement
 % of negative eigenspace of S
 
 % this basis extends {vNeg}
-MNeg = [vNeg Id(:,2:end-1)];
-[MNeg, R] = qr(MNeg, 0);
+MNeg = [vNeg Id(:,nNeg:end-1)];
+[MNeg, ~] = qr(MNeg, 0);
+
+% this basis extends {v1, v2, kerD, vNeg}
+% will need it to construct the resolvent operator
+% i.e. invert (R2 - z S2)
+M2 = [v1 v2 kerD vNeg Id(:,nNeg + 5:end)];
+[M2, ~] = qr(M2, 0);
 
 % projection gets rid of vNeg
 PNegPerp = Id; 
-PNegPerp(:,1:2) = zeros(N, 2);
-PNegPerp = M*PNegPerp*M';
+PNegPerp(:,1:nNeg) = zeros(N, nNeg);
+PNegPerp = MNeg*PNegPerp*MNeg';
 
-% we also want a version of R2 = PNeg R PNeg
-% as before, since we don't want to reduce the rank,
-% we will make R2 act as the identity on the vNeg
-
-Z = MNeg'*R*MNeg;
-Z(:,1:2) = Id(:,1:2);
-R2 = MNeg*Z*MNeg';
-
-% do the same thing for S2 = PNeg S PNeg
-
-Z = MNeg'*S*MNeg;
-Z(:,1:2) = Id(:,1:2);
-S2 = MNeg*Z*MNeg';
+% define R2 and S2 as projections on perp space to vNeg
+R2 = PNegPerp*R*PNegPerp;
+S2 = PNegPerp*S*PNegPerp;
 
 % make the Rhat matrix, expect to be diagonal since
 % the two functions in vNeg are odd and even
-Rhat = zeros(2, 2);
-for i = 1:2
-    for j = 1:2
-%         Rhat(i,j) = vNeg(:,i)' * (R*vNeg(:,j));
-        Rhat(i,j) = vNeg(:,i)'* (PM*R*PM*vNeg(:,j));
+Rhat = zeros(nNeg, nNeg);
+for i = 1:nNeg
+    for j = 1:nNeg
+        Rhat(i,j) = vNeg(:,i)' * (R*vNeg(:,j));
     end
 end
 
@@ -123,16 +134,24 @@ z = 0.0691^2;
 % Rtilde = inv(Sroot)*R2*inv(Sroot);
 % resolv2 = inv(Sroot)*inv(Rtilde - z*Id)*inv(Sroot);
 
-resolv = inv(R2 - z*S2);
+% compute resolvent operator
+Z = M2'*(R2 - z*S2)*M2;
+Z2 = inv( Z(5 + nNeg:end, 5+ nNeg:end) );
+Z(5 + nNeg:end,5 + nNeg:end) = Z2;
+resolv = M2*Z*M2';
 
-Cz = zeros(2, 2);
-for i = 1:2
-    for j = 1:2
+% Cz portion of Krein matrix
+Cz = zeros(nNeg, nNeg);
+for i = 1:nNeg
+    for j = 1:nNeg
         Cz(i,j) = (PNegPerp*resolv*PNegPerp*R*vNeg(:,i))' * (PNegPerp*R*vNeg(:,j));
     end
 end
 
 Kz = Rhat - z*ND - Cz;
+
+% save things so we can compute this easily for arbitrary z
+save 100F_double1_krein M2 R2 S2 R S lNeg vNeg PNegPerp Rhat ND
 
 
 
