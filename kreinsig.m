@@ -20,6 +20,10 @@ kreinfns = [];
 kreinsigs = [];
 
 figure('DefaultAxesFontSize',16);
+set(gca,'LineWidth',2);
+xlabel('Domain length (L)');
+ylabel('Eigenvalues');
+MarkerSize = 40;
 hold on;
 
 for index = 1:total
@@ -45,8 +49,9 @@ for index = 1:total
     ess_V = output_V(:, ess_index, index);
 
     % plot these values for a check
-    plot( output_L(index)*[1 1], imag(eigens), '.', 'Color', 'red', 'MarkerSize', 12);
-    plot( output_L(index)*[1 1], imag(nearest_ess), '.', 'Color', 'blue', 'MarkerSize', 12);
+    plot( output_L(index)*[1], imag(eigens), '.', 'Color', 'red', 'MarkerSize', MarkerSize);
+    plot( output_L(index)*[1], imag(nearest_ess), '.', 'Color', 'blue', 'MarkerSize', MarkerSize);
+    legend('Interaction Eigenvalue','Essential Spectrum Eigenvalue');
     
     N = length(x);
     L = ceil(abs(x(1)));

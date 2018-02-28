@@ -4,7 +4,8 @@ function [x, u] = double_pulse(L_new)
 
 % load from continuation data
 
-% load ucKdV_Fourier_256;
+load ucKdV_Fourier_256;
+index = 88;         % closest to 1
 % index = 234;        % closest to 2.5
 % index = 451;        % closest to 5
 % index = 652;        % closest to 7.5
@@ -35,22 +36,19 @@ function [x, u] = double_pulse(L_new)
 % Fourier, speed 25
 % load 250F;
 
-load 1500F_10;
-
 % N = 1024
-uout = uout_1024;
-xout = xout_1024;
+% uout = uout_1024;
+% xout = xout_1024;
 
 % which equation to use
 shallow = strcmp(config.equation,'shallow');
 
 % % wave data and speed c
-% uout  = uc(:, index);
-% par.c = uc(end,index);
-% xout  = x;
+uout  = uc(:, index);
+par.c = uc(end,index);
+xout  = x;
 
 par.c = uout(end);
-
 L = ceil(abs(xout(1)));         % domain size
 N = length(xout);               % number of grid points
 h = (2*L)/N;
@@ -63,6 +61,8 @@ end
 % % adjust c if we want (to standardize)
 % uout.end = 15;
 % par.c = uout.end;
+par.c = 1;
+L_new = 32;
 
 % symmetry_after = false;
 symmetry_after = true;
@@ -169,7 +169,7 @@ zDer_x    = xfine(zDer);            % x values of deriative
 
 % better way to do this, using known spacing
 start = 1;
-index = 2;
+index = 1;
 
 join_start = zDer_x(start);
 
@@ -215,16 +215,25 @@ iter = 100000;
 
 if symmetry_after
     % save this in case we want to compare
-    ud_old = ud_out
+    ud_old = ud_out;
     % enforce symmetry
     config.symmetry = 'L2squaredflip';
     [~, ud_out] = fsolveequation(xout, ud_out, par, N, L, config, iter);
 end
 
 % plot double wave before and after Newton solver
-figure('DefaultAxesFontSize',16);
-plot(xout, ud(1:end-1), xout, ud_out(1:end-1));
 
+lw = 2;
+% ax = [-15, 15, -2, 14];
+
+figure('DefaultAxesFontSize',16);
+plot(xout, ud(1:end-1), 'Linewidth',lw);
+% axis(ax);
+legend('Initial guess');
+
+figure('DefaultAxesFontSize',16);
+plot(xout, ud(1:end-1), xout, ud_out(1:end-1), 'Linewidth',lw);
+% axis(ax);
 legend('Initial guess','Output of fsolve');
 
 findsymm(xout, ud_out, config);

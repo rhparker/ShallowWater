@@ -3,13 +3,14 @@
 function [Kz, lambda] = kreinmatrix_z(z)
 
     % load precalculated data
+%     load 1500F_double2_1195_krein;
     load 100F_double2_krein;
     
     nNeg = length(lNeg);
     
     % compute resolvent operator
     Z = M2'*(R2 - z*S2)*M2;
-    Z2 = inv( Z(5 + nNeg:end, 5+ nNeg:end) );
+    Z2 = inv( Z(5 + nNeg:end, 5 + nNeg:end) );
     Z(5 + nNeg:end,5 + nNeg:end) = Z2;
     resolv = M2*Z*M2';
 

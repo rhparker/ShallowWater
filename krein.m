@@ -1,6 +1,5 @@
-% linearization about 
-
 load 100F_double2
+% load 100F;
 
 % find the kernel of the 4th order operator
 % 4th order operator is called L in Kapitula
@@ -49,3 +48,31 @@ plot(xout, psi_fd);
 d = psi'*uout(1:end-1);
 
 d_fd = psi_fd'*uout(1:end-1);
+
+%%
+
+% cumulative integral of psi
+% ditch first point since periodic and no equivalent
+% on the R end
+half_len = length(xout) / 2;
+h = xout(2) - xout(1);
+center = half_len + 1;
+left_int = zeros(1, half_len);
+right_int = zeros(1, half_len);
+
+for index = 1:128
+    left_int(index) = sum( psi_fd(1 : 1 + index) );
+    right_int(index) = -sum( psi_fd( half_len + index : end) );
+end
+
+left_deriv = phi(1:center-1);
+right_deriv = phi(center : end);
+
+% Melnikov integral, before simplification
+M1 = (left_int*left_deriv + right_int*right_deriv) * h;
+
+% this is <q, q_c>
+M2 = (uout(1:end-1)'*psi_fd) * h;
+
+% this is q(0) * int q_c
+M3 = uout(center) * sum(psi_fd) * h;

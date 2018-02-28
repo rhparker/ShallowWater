@@ -149,28 +149,31 @@ c = uout(end);
 
 % pulse 2(2)
 figure('DefaultAxesFontSize',16);
-plot(lambda1, '.', 'MarkerSize', 10);
+plot(lambda1, '.', 'MarkerSize', 25);
 axis([-0.6 0.6 -1e6 1e6]);
+set(gca,'LineWidth',2);
 
 % pulse 2(3)
 figure('DefaultAxesFontSize',16);
-plot(lambda2, '.', 'MarkerSize', 10);
+plot(lambda2, '.', 'MarkerSize', 25);
 axis([-1e-7 1e-7 -1e6 1e6]);
+set(gca,'LineWidth',2);
 
 % pulse 2(3) essential spectrum in exp weighted space
 figure('DefaultAxesFontSize',16);
 hold on
-plot(lambda2_01, '.');
+plot(lambda2_01, '.','MarkerSize', 20);
 k = linspace(-16, 16, 10001);
 ikalpha = 1i * k - alpha;
 ess_spec = ikalpha.^5 - ikalpha.^3 + c*ikalpha;
-plot(ess_spec);
+plot(ess_spec, 'Linewidth', 3);
 legend('Spectrum computed with eig', 'Predicted essential spectrum');
+set(gca,'LineWidth',2);
 
 % pulse 2(3) zoom of exp weighted eigenvalues
 figure('DefaultAxesFontSize',16);
-plot(lambda2_01, '.', 'MarkerSize', 10);
-axis([-2 0.1 -3 3]);
+plot(lambda2_01, '.', 'MarkerSize', 25);
+axis([-2 0.1 -1.5 1.5]);
 
 % pulse 3(3,3)
 figure('DefaultAxesFontSize',16);

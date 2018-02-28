@@ -1,8 +1,25 @@
 % computes the Krein matrix
 
-load 100F_double1;
-
+% standard double pulses
+load 100F_double2;
 N = length(xout);
+
+% % large domain for crossing
+% load 1500F_domain_105;
+% index = 4;
+% xout = output_x(:,index);
+% uout = output_u(:,index);
+% par.c = output_u(end,index);
+% L = output_L(index);
+% N = length(xout);
+
+% % differentiation operators
+[D, ~, ~, ~, ~] = D_fourier(N, L);
+% Jacobian
+config.symmetry = 'none';
+J_int = get_jacobian(xout, uout(1:end-1), par, config, 'integrated', 0);
+
+% load 1500F_double2_1195;
 
 % we need a basis for our subspace which extended 
 % the kernel of the two operators
@@ -91,6 +108,17 @@ title('Eigenfunctions corresponding to negative eigenvalues of the operator S');
 legendCell = cellstr(num2str(lNeg, 'nu=%-d'))
 legend(legendCell);
 
+% plot derivatives of these
+dvNeg = D*vNeg;
+for index = 1:length(lNeg)
+    dvNeg(:,index) = dvNeg(:,index) / norm(dvNeg(:,index));
+end
+figure;
+plot(xout, dvNeg);
+title('Derivatives of eigenfunctions corresponding to negative eigenvalues of the operator S');
+legendCell = cellstr(num2str(lNeg, 'nu=%-d'))
+legend(legendCell);
+
 % now we will need projection on orthogonal complement
 % of negative eigenspace of S
 
@@ -151,7 +179,7 @@ end
 Kz = Rhat - z*ND - Cz;
 
 % save things so we can compute this easily for arbitrary z
-save 100F_double1_krein M2 R2 S2 R S lNeg vNeg PNegPerp Rhat ND
+% save 1500F_double2_1195_krein M2 R2 S2 R S lNeg vNeg PNegPerp Rhat ND
 
 
 

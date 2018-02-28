@@ -16,6 +16,17 @@ F = LN*u - u.*u;
 %% Jacobian
 if nargout > 1 
     % 5th order KDV, intergrated once
+    
+    % check for exponential weight
+    % in this case, weight only affects the linear part
+    if isfield(config, 'weight')
+        % weighted version
+        if config.weight ~= 0
+            [XD, XD2, XD3, XD4, XD5] = D_expwt(D, D2, D3, D4, D5, config.weight);
+            LN = XD4 - XD2 + sparse(1:N,[1:N],par.c,N,N);
+        end
+    end
+    
     J = LN - 2 * sparse(1:N,[1:N],u,N,N);
 end
 

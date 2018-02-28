@@ -4,15 +4,9 @@
 % max_x = 0.0047733;
 % num_pts = 50;
 
-% min_x = 2.00625;
-% max_x = 2.00635;
-
-% min_x = 8.1;
-% max_x = 8.2;
-
-min_x = 8.155;
-max_x = 8.156;
-num_pts = 200;
+min_x = 15.80;
+max_x = 16.00;
+num_pts = 100;
 
 x = linspace(min_x, max_x, num_pts);
 
@@ -23,6 +17,7 @@ kEigs = [];
 for index = 1:num_pts
     [Kz, lambda] = kreinmatrix_z( x(index) );
     kEigs = [kEigs lambda];
+    disp(index);
 end
 
 if length(lambda) == 2
@@ -36,6 +31,7 @@ if length(lambda) == 2
 %     plot(x, bestfit2(x), 'b');
     title('Krein eigenvalues, Double Pulse 2(3)');
     legend('Krein Eigenvalue 1', 'Krein Eigenvalue 2');
+    axis([15.8 16 -5 5]);
 
     figure;
     hold on;
@@ -43,20 +39,21 @@ if length(lambda) == 2
 %     plot(x, bestfit2(x), 'b');
     title('Krein eigenvalue 2, Double Pulse 2(3)');
     legend('Krein Eigenvalue 2');
+    axis([15.8 16 -2e-3 2e-3]);
     
-    % plot with different y axes
-    figure;
-    [hAx,hLine1,hLine2] = plotyy(x, kEigs(1,:), x, kEigs(2,:) );
-    set(hAx(1),'ycolor','r') 
-    set(hAx(2),'ycolor','b')
-    set(hLine1,'marker','.','color','r','linestyle','none')
-    set(hLine2,'marker','.','color','b','linestyle','none')
-    maxval = cellfun(@(x) max(abs(x)), get([hLine1 hLine2], 'YData'));
-    ylim = [-maxval, maxval] * 1.1;  % Mult by 1.1 to pad out a bit
-    set(hAx(1), 'YLim', ylim(1,:) / 50 );
-    set(hAx(2), 'YLim', ylim(2,:) );
-    title('Krein eigenvalue, different y axis scales, Double Pulse 2(3)');
-    legend('Krein Eigenvalue 1', 'Krein Eigenvalue 2');
+%     % plot with different y axes
+%     figure;
+%     [hAx,hLine1,hLine2] = plotyy(x, kEigs(1,:), x, kEigs(2,:) );
+%     set(hAx(1),'ycolor','r') 
+%     set(hAx(2),'ycolor','b')
+%     set(hLine1,'marker','.','color','r','linestyle','none')
+%     set(hLine2,'marker','.','color','b','linestyle','none')
+%     maxval = cellfun(@(x) max(abs(x)), get([hLine1 hLine2], 'YData'));
+%     ylim = [-maxval, maxval] * 1.1;  % Mult by 1.1 to pad out a bit
+%     set(hAx(1), 'YLim', ylim(1,:) / 50 );
+%     set(hAx(2), 'YLim', ylim(2,:) );
+%     title('Krein eigenvalue, different y axis scales, Double Pulse 2(3)');
+%     legend('Krein Eigenvalue 1', 'Krein Eigenvalue 2');
     
     
     P = InterX([x;kEigs(1,:)],[x;kEigs(2,:)]); 

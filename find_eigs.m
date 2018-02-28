@@ -13,11 +13,9 @@
 % load 0singleneumann; 
 
 load 100F;
-
 index = 1;
+% uout = ud_out(:,index);
 
-% uout = ud_out(:,index+1);
-uout = ud_out_1;
 
 % uout = ud_out_768;
 % xout = xout_768;
@@ -25,7 +23,13 @@ uout = ud_out_1;
 % uout = ud_out(:,index);
 % uout = umc_2_4;
 
-target = targets(index);
+% load 1500F_domain_105;
+% index = 4;
+% xout = output_x(:,index);
+% uout = output_u(:,index);
+
+% target = targets(index);
+target = 0.1;
 threshold = 0.0001;
 
 % default parameters
@@ -47,7 +51,7 @@ N_old = length(xout);
 % N = 1024;
 
 % % change domain size
-% L = 130;
+% L = 119.90;
 
 % % change speed c (to standardize between methods)
 % par.c = 82.5;
@@ -63,23 +67,24 @@ end
 
 config.symmetry = 'none';
 
-% if we change stuff, run through Newton solver
-if N ~= N_old || L ~= ceil(abs(xout(1))) || par.c ~= uout(end)
-    % interpolate onto a larger grid, or with a longer domain, or with
-    % different c
-    if strcmp(config.method,'Chebyshev')
-        [xnew, unew] = fsolveequation(xout, uout, par, N, L, config, 10000);
-    else
-        [xnew, unew] = fsolveequation(xout, uout, par, N, L, config, 10000);
-    end
-else
-    % if we don't interpolate
-    xnew = xout; unew = uout;
-end
-
-% now enforce symmetry
-config.symmetry = 'L2squaredflip';
-[xnew, unew] = fsolveequation(xnew, unew, par, N, L, config, 10000);
+% % if we change stuff, run through Newton solver
+% if N ~= N_old || L ~= ceil(abs(xout(1))) || par.c ~= uout(end)
+%     % interpolate onto a larger grid, or with a longer domain, or with
+%     % different c
+%     if strcmp(config.method,'Chebyshev')
+%         [xnew, unew] = fsolveequation(xout, uout, par, N, L, config, 10000);
+%     else
+%         [xnew, unew] = fsolveequation(xout, uout, par, N, L, config, 10000);
+%     end
+% else
+%     % if we don't interpolate
+%     xnew = xout; unew = uout;
+% end
+% 
+% % now enforce symmetry
+% config.symmetry = 'L2squaredflip';
+% [xnew, unew] = fsolveequation(xnew, unew, par, N, L, config, 10000);
+unew = uout;
 
 % differentiation matrices
 
@@ -110,6 +115,7 @@ end
 
 % just the wave
 uwave = unew(1:end-1);
+xnew = xout;
 
 % need configuration without symmetry to find eigenvalues
 config_nosymm = config;
@@ -199,6 +205,7 @@ pt_spec_V = V_int( :, find(lambda_int <= 1) );
 a = find_exp_wt(par.c);
 % a = a / 2;
 % a = 0.1;
+% a = 0.04;
 a = 0;
 
 % eigenvalue of the constant solution for linearization about zero solution
@@ -245,8 +252,8 @@ if a ~ 0
 %     max_before = max( abs( J*eVecs(:,index) - eVals(index)*eVecs(:,index)) );
 %     max_after  = max( abs( J*vout - lout*vout));
     
+% a = 0;
 
-% otherwise grab the eigenvalues off the real axis
 else
     % looking for real eigenvalues
     if imag(target) == 0
